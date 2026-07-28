@@ -610,7 +610,7 @@ function submitProduct(btn) {
 function loadBasket() {
   const list = document.getElementById('basketList');
   list.innerHTML = t('loading');
-  apiGet('basket').then(data => renderBasket(data)).catch(() => { list.innerHTML = t('syncError'); });
+  apiGet('basketEntries').then(data => renderBasket(data)).catch(() => { list.innerHTML = t('syncError'); });
 }
 
 function renderBasket(data) {
@@ -622,17 +622,18 @@ function renderBasket(data) {
     const name = product ? (product['name_' + currentLang] || product.name_de) : item.id;
     const row = document.createElement('div');
     row.className = 'basket-row';
-    row.innerHTML = `<span>${name}</span>
+    const meta = [item.addedBy, item.timestamp].filter(Boolean).join(' · ');
+    row.innerHTML = `<span>${name}${meta ? `<div class="note-meta">${meta}</div>` : ''}</span>
       <div class="basket-row-right">
         <strong>${item.quantity} ${item.unit}</strong>
-        <button class="delete-btn" onclick="removeFromBasket('${item.id}')" aria-label="delete">${ICONS.trash}</button>
+        <button class="delete-btn" onclick="removeFromBasket(${item.rowIndex})" aria-label="delete">${ICONS.trash}</button>
       </div>`;
     list.appendChild(row);
   });
 }
 
-function removeFromBasket(productId) {
-  postOrQueue('removeFromBasket', { productId }).then(() => loadBasket());
+function removeFromBasket(rowIndex) {
+  postOrQueue('removeBasketEntry', { rowIndex }).then(() => loadBasket());
 }
 
 function finalizeOrder(btn) {

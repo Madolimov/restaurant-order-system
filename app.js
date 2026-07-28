@@ -4,7 +4,7 @@ const SECRET_KEY = '3058d732b248b00519bae478e685e280'; // must match Code.gs
 const CHEF_PIN = '0404'; // must match Code.gs - chef-only actions are re-checked on the server too
 // ===========================================================================
 
-const FETCH_TIMEOUT_MS = 8000;
+const FETCH_TIMEOUT_MS = 15000;
 const PENDING_KEY = 'pendingActions';
 const CACHED_PRODUCTS_KEY = 'cachedProducts';
 
@@ -653,7 +653,9 @@ function loadDelivery() {
     }
     const latest = dates[0];
     document.getElementById('deliveryDateLabel').textContent = latest;
-    apiGet('orderByDate', { date: latest }).then(items => renderStatusList('deliveryList', latest, items));
+    // Must return this promise, or a failure here is invisible to the outer .catch()
+    // below and the list is left showing stale (possibly disabled) buttons forever.
+    return apiGet('orderByDate', { date: latest }).then(items => renderStatusList('deliveryList', latest, items));
   }).catch(() => { document.getElementById('deliveryList').innerHTML = t('syncError'); });
 }
 
@@ -678,10 +680,15 @@ function setStatus(btn, orderDate, productId, status, containerId) {
   if (btn.disabled) return;
   const pills = btn.closest('.status-pills').querySelectorAll('.status-pill');
   pills.forEach(p => { p.disabled = true; p.classList.add('is-busy'); });
+  const clearBusy = () => pills.forEach(p => { p.disabled = false; p.classList.remove('is-busy'); });
   const reload = () => { if (containerId === 'deliveryList') loadDelivery(); else loadCalendarDate(); };
+  // Reload regardless of whether the write succeeded, failed, or timed out - the list
+  // re-render is what actually clears the disabled/busy state on these buttons, so it
+  // must never be skipped or a slow network leaves them stuck unusable.
   postOrQueue('setDeliveryStatus', { orderDate, productId, status, updatedBy: document.getElementById('employeeName').value })
+    .catch(() => {})
     .then(reload)
-    .catch(() => { pills.forEach(p => { p.disabled = false; p.classList.remove('is-busy'); }); });
+    .catch(clearBusy);
 }
 
 // ---------- calendar ----------

@@ -36,7 +36,10 @@ const translations = {
     syncError: 'Fehler beim Laden. Erneut versuchen.',
     searchPlaceholder: 'Produkt suchen...', noSearchResults: 'Kein Produkt gefunden.',
     cancelBtn: 'Abbrechen', confirmBtn: 'Bestätigen',
-    confirmDeleteProduct: 'Produkt "{name}" wirklich löschen?', productDeleted: 'Produkt gelöscht.'
+    confirmDeleteProduct: 'Produkt "{name}" wirklich löschen?', productDeleted: 'Produkt gelöscht.',
+    gateTitle: 'Zugangscode', gateSubtitle: 'Nur für Mitarbeiter des Restaurants.',
+    gateEnter: 'Bestätigen', gateWrong: 'Falscher Code', gateNeedsInternet: 'Internet erforderlich zum ersten Öffnen.',
+    disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -65,7 +68,10 @@ const translations = {
     syncError: 'Failed to load. Retry.',
     searchPlaceholder: 'Search product...', noSearchResults: 'No product found.',
     cancelBtn: 'Cancel', confirmBtn: 'Confirm',
-    confirmDeleteProduct: 'Really delete product "{name}"?', productDeleted: 'Product deleted.'
+    confirmDeleteProduct: 'Really delete product "{name}"?', productDeleted: 'Product deleted.',
+    gateTitle: 'Access Code', gateSubtitle: 'Restaurant staff only.',
+    gateEnter: 'Confirm', gateWrong: 'Wrong code', gateNeedsInternet: 'Internet is required the first time you open this.',
+    disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -94,7 +100,10 @@ const translations = {
     syncError: 'Caricamento fallito. Riprova.',
     searchPlaceholder: 'Cerca prodotto...', noSearchResults: 'Nessun prodotto trovato.',
     cancelBtn: 'Annulla', confirmBtn: 'Conferma',
-    confirmDeleteProduct: 'Eliminare davvero il prodotto "{name}"?', productDeleted: 'Prodotto eliminato.'
+    confirmDeleteProduct: 'Eliminare davvero il prodotto "{name}"?', productDeleted: 'Prodotto eliminato.',
+    gateTitle: 'Codice di accesso', gateSubtitle: 'Solo per il personale del ristorante.',
+    gateEnter: 'Conferma', gateWrong: 'Codice errato', gateNeedsInternet: 'Internet necessario per il primo accesso.',
+    disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.'
   }
 };
 
@@ -174,7 +183,7 @@ function fetchWithTimeout(url, options) {
 
 function apiGet(action, params) {
   const qs = new URLSearchParams(Object.assign({ action, key: SECRET_KEY }, params || {}));
-  return fetchWithTimeout(`${API_URL}?${qs.toString()}`).then(r => r.json());
+  return fetchWithTimeout(`${API_URL}?${qs.toString()}`).then(r => r.json()).then(checkDisabled);
 }
 
 function apiPost(action, payload) {
@@ -182,7 +191,15 @@ function apiPost(action, payload) {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(Object.assign({ action, key: SECRET_KEY }, payload))
-  }).then(r => r.json());
+  }).then(r => r.json()).then(checkDisabled);
+}
+
+// The chef can flip the whole system off at any time from the spreadsheet's Settings
+// tab (SystemEnabled = FALSE) - every request funnels through here, so it's caught
+// immediately even for a session that was already open.
+function checkDisabled(res) {
+  if (res && res.error === 'disabled') showSystemDisabled();
+  return res;
 }
 
 // ---------- offline queue ----------
@@ -887,6 +904,57 @@ function goToReportMonth(month) {
   loadReport();
 }
 
+// ---------- entry gate (staff PIN) ----------
+
+function getDeviceId() {
+  let id = localStorage.getItem('deviceId');
+  if (!id) {
+    id = window.crypto && crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    localStorage.setItem('deviceId', id);
+  }
+  return id;
+}
+
+function initStaffGate() {
+  if (sessionStorage.getItem('staffAccessGranted') === 'true') {
+    document.getElementById('staff-gate').style.display = 'none';
+    return;
+  }
+  setTimeout(() => document.getElementById('staffPinInput').focus(), 100);
+}
+
+function submitStaffPin(btn) {
+  if (btn && btn.disabled) return;
+  const input = document.getElementById('staffPinInput');
+  const err = document.getElementById('staffGateError');
+  if (!navigator.onLine) {
+    err.textContent = t('gateNeedsInternet');
+    err.style.display = 'block';
+    return;
+  }
+  withBusy(btn, apiPost('verifyStaffAccess', { deviceId: getDeviceId(), pin: input.value }).catch(() => ({ error: 'network' }))).then(res => {
+    if (res.error === 'disabled') return;
+    if (res.success) {
+      sessionStorage.setItem('staffAccessGranted', 'true');
+      document.getElementById('staff-gate').style.display = 'none';
+    } else {
+      err.textContent = res.error === 'network' ? t('syncError') : t('gateWrong');
+      err.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  });
+}
+
+function onStaffPinKey(e) {
+  if (e.key === 'Enter') submitStaffPin(document.querySelector('#staff-gate .submit-btn'));
+}
+
+function showSystemDisabled() {
+  document.getElementById('staff-gate').style.display = 'none';
+  document.getElementById('system-disabled-gate').style.display = 'flex';
+}
+
 // ---------- boot ----------
 
 window.addEventListener('online', () => { updateOfflineBanner(); flushPending(); });
@@ -899,5 +967,6 @@ if ('serviceWorker' in navigator) {
 
 document.getElementById('noteDate').value = new Date().toISOString().slice(0, 10);
 applyTranslations();
+initStaffGate();
 loadProducts();
 flushPending();

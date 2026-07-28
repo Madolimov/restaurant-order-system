@@ -202,6 +202,7 @@ function onChefButton() {
     chefMode = false;
     sessionStorage.removeItem('chefMode');
     updateChefUI();
+    renderCatalog();
     return;
   }
   openChefPinModal();
@@ -228,6 +229,7 @@ function confirmChefPin() {
     chefMode = true;
     sessionStorage.setItem('chefMode', 'true');
     updateChefUI();
+    renderCatalog();
     closeChefPinModal();
   } else {
     err.textContent = t('chefPinWrong');

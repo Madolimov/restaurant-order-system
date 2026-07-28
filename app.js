@@ -132,6 +132,38 @@ let docFileMime = null;
 let editingProductId = null;
 const collapsedCategories = {};
 
+// ---------- sound feedback ----------
+// Generated with the Web Audio API (no audio files needed, works fully offline).
+// Must be created/resumed inside a real click handler - browsers block audio until a user gesture.
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, duration, delay, volume) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const startTime = ctx.currentTime + (delay || 0);
+    gain.gain.setValueAtTime(volume, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  } catch (e) { /* Web Audio unavailable - fail silently */ }
+}
+function playClickSound() { playTone(700, 0.05, 0, 0.07); }
+function playSuccessSound() { playTone(660, 0.11, 0, 0.12); playTone(990, 0.16, 0.1, 0.12); }
+
+document.addEventListener('click', e => {
+  if (e.target.closest('button')) playClickSound();
+}, true);
+
 function t(key) { return translations[currentLang][key]; }
 
 function fetchWithTimeout(url, options) {
@@ -550,7 +582,7 @@ function submitProduct(btn) {
   withBusy(btn, postOrQueue(action, payload)).then(res => {
     if (res.error) { showMsg('addProductMessage', res.error, 'error'); return; }
     showMsg('addProductMessage', res.queued ? t('queued') : t('productAdded'), res.queued ? 'info' : 'success');
-    if (!res.queued) { resetProductForm(); addProductOpen = false; updateChefUI(); loadProducts(); }
+    if (!res.queued) { playSuccessSound(); resetProductForm(); addProductOpen = false; updateChefUI(); loadProducts(); }
   });
 }
 
@@ -590,7 +622,7 @@ function finalizeOrder(btn) {
     if (res.error === 'empty') { showMsg('basketMessage', t('basketEmptyError'), 'error'); return; }
     if (res.error) { showMsg('basketMessage', res.error, 'error'); return; }
     showMsg('basketMessage', res.queued ? t('queued') : t('orderFinalized'), res.queued ? 'info' : 'success');
-    if (!res.queued) loadBasket();
+    if (!res.queued) { playSuccessSound(); loadBasket(); }
   });
 }
 

@@ -381,10 +381,6 @@ function loadProducts() {
   apiGet('products').then(data => {
     products = data;
     localStorage.setItem(CACHED_PRODUCTS_KEY, JSON.stringify(data));
-    if (!localStorage.getItem('collapsedInit') && data.length > 20) {
-      Array.from(new Set(data.map(p => p.category || 'other'))).forEach(c => { collapsedCategories[c] = true; });
-      localStorage.setItem('collapsedInit', '1');
-    }
     document.getElementById('loading-products').style.display = 'none';
     renderCatalog();
   }).catch(() => { document.getElementById('loading-products').style.display = 'none'; });
@@ -412,7 +408,10 @@ function renderCatalog() {
     const items = allItemsInCat.filter(matches);
     if (allItemsInCat.length === 0 || (searching && items.length === 0)) return;
     anyMatch = true;
-    const collapsed = searching ? false : !!collapsedCategories[cat];
+    // Categories default to collapsed once they grow past a browsable size, unless the
+    // user has explicitly toggled that category - recomputed every render, so it stays
+    // correct as the catalog grows instead of depending on a one-time "first load" flag.
+    const collapsed = searching ? false : (cat in collapsedCategories ? collapsedCategories[cat] : allItemsInCat.length > 20);
 
     const header = document.createElement('div');
     header.className = 'category-header cat-' + (categoryKeys.includes(cat) ? cat : 'other');

@@ -667,17 +667,21 @@ function renderStatusList(containerId, orderDate, items) {
     const row = document.createElement('div');
     row.className = 'status-row';
     const pills = ['pending', 'arrived', 'missing'].map(s =>
-      `<button class="status-pill ${s} ${item.status === s ? 'active' : ''}" onclick="setStatus('${orderDate}','${item.productId}','${s}','${containerId}')">${ICONS[s]}${t('status' + s.charAt(0).toUpperCase() + s.slice(1))}</button>`
+      `<button type="button" class="status-pill ${s} ${item.status === s ? 'active' : ''}" onclick="setStatus(this,'${orderDate}','${item.productId}','${s}','${containerId}')">${ICONS[s]}${t('status' + s.charAt(0).toUpperCase() + s.slice(1))}</button>`
     ).join('');
     row.innerHTML = `<span>${name} <small>(${item.quantity} ${item.unit})</small></span><div class="status-pills">${pills}</div>`;
     list.appendChild(row);
   });
 }
 
-function setStatus(orderDate, productId, status, containerId) {
-  postOrQueue('setDeliveryStatus', { orderDate, productId, status, updatedBy: document.getElementById('employeeName').value }).then(() => {
-    if (containerId === 'deliveryList') loadDelivery(); else loadCalendarDate();
-  });
+function setStatus(btn, orderDate, productId, status, containerId) {
+  if (btn.disabled) return;
+  const pills = btn.closest('.status-pills').querySelectorAll('.status-pill');
+  pills.forEach(p => { p.disabled = true; p.classList.add('is-busy'); });
+  const reload = () => { if (containerId === 'deliveryList') loadDelivery(); else loadCalendarDate(); };
+  postOrQueue('setDeliveryStatus', { orderDate, productId, status, updatedBy: document.getElementById('employeeName').value })
+    .then(reload)
+    .catch(() => { pills.forEach(p => { p.disabled = false; p.classList.remove('is-busy'); }); });
 }
 
 // ---------- calendar ----------

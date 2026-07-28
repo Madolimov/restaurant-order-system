@@ -339,6 +339,7 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .status-pill.arrived.active { background: var(--accent); color: white; border-color: var(--accent); }
 .status-pill.missing.active { background: #c62828; color: white; border-color: #c62828; }
 .status-pill.pending.active { background: var(--gold); color: var(--gold-text); border-color: var(--gold); }
+.status-pill:disabled, .status-pill.is-busy { opacity: .5; pointer-events: none; animation: pulse-busy 1s ease-in-out infinite; }
 
 .note-item { padding: 11px 0; border-bottom: 1px solid var(--border-light); font-size: 14px; }
 .note-item:last-child { border-bottom: none; }

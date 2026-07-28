@@ -150,12 +150,20 @@
   <!-- DELIVERY -->
   <div id="view-delivery" class="view" style="display:none">
     <h3 id="deliveryDateLabel"></h3>
+    <button type="button" class="submit-btn bulk-arrive-btn" onclick="setAllStatus('deliveryList', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <span data-i18n="markAllArrived"></span>
+    </button>
     <div class="card"><div id="deliveryList"></div></div>
   </div>
 
   <!-- CALENDAR -->
   <div id="view-calendar" class="view" style="display:none">
     <input type="date" id="calendarDate" class="field" onchange="loadCalendarDate()">
+    <button type="button" class="submit-btn bulk-arrive-btn" onclick="setAllStatus('calendarList', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <span data-i18n="markAllArrived"></span>
+    </button>
     <div class="card"><div id="calendarList"></div></div>
   </div>
 

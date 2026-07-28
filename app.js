@@ -39,7 +39,8 @@ const translations = {
     confirmDeleteProduct: 'Produkt "{name}" wirklich löschen?', productDeleted: 'Produkt gelöscht.',
     gateTitle: 'Zugangscode', gateSubtitle: 'Nur für Mitarbeiter des Restaurants.',
     gateEnter: 'Bestätigen', gateWrong: 'Falscher Code', gateNeedsInternet: 'Internet erforderlich zum ersten Öffnen.',
-    disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.'
+    disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.',
+    markAllArrived: 'Alles als angekommen markieren', confirmMarkAllArrived: 'Wirklich alle Produkte dieser Bestellung als angekommen markieren?'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -71,7 +72,8 @@ const translations = {
     confirmDeleteProduct: 'Really delete product "{name}"?', productDeleted: 'Product deleted.',
     gateTitle: 'Access Code', gateSubtitle: 'Restaurant staff only.',
     gateEnter: 'Confirm', gateWrong: 'Wrong code', gateNeedsInternet: 'Internet is required the first time you open this.',
-    disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.'
+    disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.',
+    markAllArrived: 'Mark all as arrived', confirmMarkAllArrived: 'Really mark every product in this order as arrived?'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -103,7 +105,8 @@ const translations = {
     confirmDeleteProduct: 'Eliminare davvero il prodotto "{name}"?', productDeleted: 'Prodotto eliminato.',
     gateTitle: 'Codice di accesso', gateSubtitle: 'Solo per il personale del ristorante.',
     gateEnter: 'Conferma', gateWrong: 'Codice errato', gateNeedsInternet: 'Internet necessario per il primo accesso.',
-    disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.'
+    disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.',
+    markAllArrived: 'Segna tutto come arrivato', confirmMarkAllArrived: 'Segnare davvero tutti i prodotti di questo ordine come arrivati?'
   }
 };
 
@@ -673,6 +676,18 @@ function renderStatusList(containerId, orderDate, items) {
     ).join('');
     row.innerHTML = `<span>${name} <small>(${item.quantity} ${item.unit})</small></span><div class="status-pills">${pills}</div>`;
     list.appendChild(row);
+  });
+}
+
+function setAllStatus(containerId, btn) {
+  if (btn.disabled) return;
+  const orderDate = containerId === 'deliveryList'
+    ? document.getElementById('deliveryDateLabel').textContent
+    : document.getElementById('calendarDate').value;
+  if (!orderDate) return;
+  showConfirm(t('confirmMarkAllArrived'), () => {
+    withBusy(btn, postOrQueue('setAllDeliveryStatus', { orderDate, status: 'arrived', updatedBy: document.getElementById('employeeName').value }))
+      .then(() => { if (containerId === 'deliveryList') loadDelivery(); else loadCalendarDate(); });
   });
 }
 

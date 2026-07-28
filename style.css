@@ -307,6 +307,7 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 }
 @keyframes pulse-busy { 0%, 100% { opacity: .55; } 50% { opacity: .8; } }
 .secondary-btn { background: var(--secondary); box-shadow: 0 4px 12px rgba(141,110,99,.3); }
+.bulk-arrive-btn { margin-bottom: 10px; }
 
 .chef-only-box {
   margin-top: 18px; padding: 14px; border-radius: 14px; background: var(--chef-bg);

@@ -301,6 +301,11 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 }
 .submit-btn svg { width: 18px; height: 18px; }
 .submit-btn:active { background: var(--accent-active); }
+.submit-btn:disabled, .submit-btn.is-busy {
+  opacity: .55; pointer-events: none;
+  animation: pulse-busy 1s ease-in-out infinite;
+}
+@keyframes pulse-busy { 0%, 100% { opacity: .55; } 50% { opacity: .8; } }
 .secondary-btn { background: var(--secondary); box-shadow: 0 4px 12px rgba(141,110,99,.3); }
 
 .chef-only-box {

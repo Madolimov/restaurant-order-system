@@ -94,7 +94,7 @@
       </div>
       <div id="catalogList"></div>
     </div>
-    <button class="submit-btn" onclick="submitToBasket()">
+    <button class="submit-btn" onclick="submitToBasket(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8ZM9 8a3 3 0 0 1 6 0"/></svg>
       <span data-i18n="addToBasket"></span>
     </button>
@@ -113,7 +113,7 @@
       <input type="text" id="newProdCategoryCustom" data-i18n-placeholder="newCategoryName" class="field" style="display:none">
       <input type="number" step="0.01" min="0" id="newProdPrice" data-i18n-placeholder="price" class="field">
       <input type="text" id="newProdSupplier" data-i18n-placeholder="supplier" class="field">
-      <button class="submit-btn secondary-btn" onclick="submitProduct()"><span data-i18n="addProductBtn"></span></button>
+      <button class="submit-btn secondary-btn" onclick="submitProduct(this)"><span data-i18n="addProductBtn"></span></button>
       <div id="addProductMessage" class="msg"></div>
     </div>
   </div>
@@ -121,7 +121,7 @@
   <!-- BASKET -->
   <div id="view-basket" class="view" style="display:none">
     <div class="card"><div id="basketList"></div></div>
-    <button id="finalizeBtn" class="submit-btn chef-only-box" style="display:none" onclick="finalizeOrder()">
+    <button id="finalizeBtn" class="submit-btn chef-only-box" style="display:none" onclick="finalizeOrder(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       <span data-i18n="finalizeBtn"></span>
     </button>
@@ -147,7 +147,7 @@
     <label class="chef-only-box" id="chefNoteLabelWrap" style="display:none">
       <input type="checkbox" id="noteIsChef"> <span data-i18n="markChefNote"></span>
     </label>
-    <button class="submit-btn" onclick="submitNote()">
+    <button class="submit-btn" onclick="submitNote(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
       <span data-i18n="addNoteBtn"></span>
     </button>
@@ -181,7 +181,7 @@
     </div>
     <div id="emailReportBox" class="chef-only-box" style="display:none">
       <input type="email" id="reportEmailTo" data-i18n-placeholder="accountantEmail" class="field">
-      <button class="submit-btn secondary-btn" onclick="submitEmailReport()" data-i18n="sendEmailBtn"></button>
+      <button class="submit-btn secondary-btn" onclick="submitEmailReport(this)" data-i18n="sendEmailBtn"></button>
       <div id="emailReportMessage" class="msg"></div>
     </div>
     <div id="reportShareLinks" style="display:none"></div>
@@ -196,7 +196,7 @@
       <input type="text" id="newExpenseDesc" data-i18n-placeholder="expenseDesc" class="field">
       <input type="number" step="0.01" min="0" id="newExpenseAmount" data-i18n-placeholder="expenseAmount" class="field">
       <input type="date" id="newExpenseDate" class="field">
-      <button class="submit-btn secondary-btn" onclick="submitExpense()" data-i18n="addExpenseBtn"></button>
+      <button class="submit-btn secondary-btn" onclick="submitExpense(this)" data-i18n="addExpenseBtn"></button>
       <div id="addExpenseMessage" class="msg"></div>
     </div>
   </div>
@@ -217,7 +217,7 @@
         <span id="docFileLabel" data-i18n="chooseOrPhoto"></span>
       </label>
       <input type="file" id="docFileInput" accept="image/*" capture="environment" style="display:none" onchange="onDocFileChosen()">
-      <button class="submit-btn" onclick="submitDocument()">
+      <button class="submit-btn" onclick="submitDocument(this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
         <span data-i18n="uploadBtn"></span>
       </button>
@@ -225,6 +225,16 @@
     </div>
 
     <div class="card"><div id="documentsList"></div></div>
+  </div>
+
+  <div id="confirm-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeConfirmModal()">
+    <div class="modal-box">
+      <h3><span id="confirmModalText"></span></h3>
+      <div class="modal-actions">
+        <button type="button" class="submit-btn secondary-btn" onclick="closeConfirmModal()" data-i18n="cancelBtn"></button>
+        <button type="button" class="submit-btn" onclick="confirmModalYes()" data-i18n="confirmBtn"></button>
+      </div>
+    </div>
   </div>
 
   <div id="chef-pin-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this) closeChefPinModal()">

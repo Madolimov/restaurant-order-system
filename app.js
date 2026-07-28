@@ -35,7 +35,8 @@ const translations = {
     chefNoteLabel: 'Notiz vom Chef', queued: 'Kein Internet: wird automatisch gesendet, sobald Internet da ist.',
     syncError: 'Fehler beim Laden. Erneut versuchen.',
     searchPlaceholder: 'Produkt suchen...', noSearchResults: 'Kein Produkt gefunden.',
-    cancelBtn: 'Abbrechen', confirmBtn: 'Bestätigen'
+    cancelBtn: 'Abbrechen', confirmBtn: 'Bestätigen',
+    confirmDeleteProduct: 'Produkt "{name}" wirklich löschen?', productDeleted: 'Produkt gelöscht.'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -63,7 +64,8 @@ const translations = {
     chefNoteLabel: 'Note from the chef', queued: 'No internet: will be sent automatically once internet is back.',
     syncError: 'Failed to load. Retry.',
     searchPlaceholder: 'Search product...', noSearchResults: 'No product found.',
-    cancelBtn: 'Cancel', confirmBtn: 'Confirm'
+    cancelBtn: 'Cancel', confirmBtn: 'Confirm',
+    confirmDeleteProduct: 'Really delete product "{name}"?', productDeleted: 'Product deleted.'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -91,7 +93,8 @@ const translations = {
     chefNoteLabel: 'Nota dello chef', queued: 'Senza internet: verrà inviato automaticamente quando torna internet.',
     syncError: 'Caricamento fallito. Riprova.',
     searchPlaceholder: 'Cerca prodotto...', noSearchResults: 'Nessun prodotto trovato.',
-    cancelBtn: 'Annulla', confirmBtn: 'Conferma'
+    cancelBtn: 'Annulla', confirmBtn: 'Conferma',
+    confirmDeleteProduct: 'Eliminare davvero il prodotto "{name}"?', productDeleted: 'Prodotto eliminato.'
   }
 };
 
@@ -175,6 +178,15 @@ function flushPending() {
 function postOrQueue(action, payload) {
   if (!navigator.onLine) { queueAction(action, payload); return Promise.resolve({ queued: true }); }
   return apiPost(action, payload).catch(() => { queueAction(action, payload); return { queued: true }; });
+}
+
+// Disables the button immediately (instant visual feedback + blocks accidental double-submits
+// while the slow Apps Script backend is still responding) and restores it once settled.
+function withBusy(btn, promise) {
+  if (!btn) return promise;
+  btn.disabled = true;
+  btn.classList.add('is-busy');
+  return promise.finally(() => { btn.disabled = false; btn.classList.remove('is-busy'); });
 }
 
 function updateOfflineBanner() {
@@ -391,6 +403,7 @@ function renderCatalog() {
       row.innerHTML = `<span>${name} <small>(${p.unit}${p.price ? ' - ' + p.price + ' €' : ''})</small></span>
         <div class="row-actions">
           ${chefMode ? `<button type="button" class="edit-btn" onclick="startEditProduct('${p.id}')" aria-label="edit">${ICONS.edit}</button>` : ''}
+          ${chefMode ? `<button type="button" class="delete-btn" onclick="deleteProductRow('${p.id}')" aria-label="delete">${ICONS.trash}</button>` : ''}
           <div class="stepper">
             <button type="button" class="step-btn" onclick="stepQty('${p.id}',-1)" aria-label="-">-</button>
             <input type="number" min="0" inputmode="numeric" data-id="${p.id}" value="0">
@@ -438,6 +451,36 @@ function startEditProduct(id) {
   document.getElementById('addProductBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
+// Generic confirm modal - never use window.confirm()/alert()/prompt() here: those are
+// silently disabled in installed (standalone) PWA mode on iOS and some Android browsers.
+let confirmModalCallback = null;
+function showConfirm(text, callback) {
+  document.getElementById('confirmModalText').textContent = text;
+  confirmModalCallback = callback;
+  document.getElementById('confirm-modal').style.display = 'flex';
+}
+function closeConfirmModal() {
+  document.getElementById('confirm-modal').style.display = 'none';
+  confirmModalCallback = null;
+}
+function confirmModalYes() {
+  const cb = confirmModalCallback;
+  closeConfirmModal();
+  if (cb) cb();
+}
+
+function deleteProductRow(id) {
+  const product = products.find(p => p.id === id);
+  const name = product ? (product['name_' + currentLang] || product.name_de) : id;
+  showConfirm(t('confirmDeleteProduct').replace('{name}', name), () => {
+    postOrQueue('deleteProduct', { pin: CHEF_PIN, id }).then(res => {
+      if (res.error) { showMsg('addProductMessage', res.error, 'error'); return; }
+      showMsg('addProductMessage', res.queued ? t('queued') : t('productDeleted'), res.queued ? 'info' : 'success');
+      if (!res.queued) loadProducts();
+    });
+  });
+}
+
 function stepQty(id, delta) {
   const input = document.querySelector(`#catalogList input[data-id="${id}"]`);
   if (!input) return;
@@ -472,19 +515,21 @@ function onCategorySelectChange() {
   document.getElementById('newProdCategoryCustom').style.display = isNew ? 'block' : 'none';
 }
 
-function submitToBasket() {
+function submitToBasket(btn) {
+  if (btn && btn.disabled) return;
   const employeeName = document.getElementById('employeeName').value;
   const inputs = document.querySelectorAll('#catalogList input');
   const items = [];
   inputs.forEach(inp => { if (inp.value && Number(inp.value) > 0) items.push({ id: inp.getAttribute('data-id'), quantity: inp.value }); });
   if (items.length === 0) return;
-  postOrQueue('addToBasket', { employeeName, items }).then(res => {
+  withBusy(btn, postOrQueue('addToBasket', { employeeName, items })).then(res => {
     inputs.forEach(inp => inp.value = '');
     showMsg('catalogMessage', res.queued ? t('queued') : t('sentToBasket'), res.queued ? 'info' : 'success');
   });
 }
 
-function submitProduct() {
+function submitProduct(btn) {
+  if (btn && btn.disabled) return;
   const categorySelect = document.getElementById('newProdCategory').value;
   const category = categorySelect === '__new__' ? document.getElementById('newProdCategoryCustom').value.trim() : categorySelect;
   const product = {
@@ -502,7 +547,7 @@ function submitProduct() {
   const action = isEdit ? 'updateProduct' : 'addProduct';
   const payload = isEdit ? { pin: CHEF_PIN, id: editingProductId, product } : { pin: CHEF_PIN, product };
 
-  postOrQueue(action, payload).then(res => {
+  withBusy(btn, postOrQueue(action, payload)).then(res => {
     if (res.error) { showMsg('addProductMessage', res.error, 'error'); return; }
     showMsg('addProductMessage', res.queued ? t('queued') : t('productAdded'), res.queued ? 'info' : 'success');
     if (!res.queued) { resetProductForm(); addProductOpen = false; updateChefUI(); loadProducts(); }
@@ -539,8 +584,9 @@ function removeFromBasket(productId) {
   postOrQueue('removeFromBasket', { productId }).then(() => loadBasket());
 }
 
-function finalizeOrder() {
-  postOrQueue('finalizeOrder', { pin: CHEF_PIN }).then(res => {
+function finalizeOrder(btn) {
+  if (btn && btn.disabled) return;
+  withBusy(btn, postOrQueue('finalizeOrder', { pin: CHEF_PIN })).then(res => {
     if (res.error === 'empty') { showMsg('basketMessage', t('basketEmptyError'), 'error'); return; }
     if (res.error) { showMsg('basketMessage', res.error, 'error'); return; }
     showMsg('basketMessage', res.queued ? t('queued') : t('orderFinalized'), res.queued ? 'info' : 'success');
@@ -626,13 +672,14 @@ function renderChefNoteBanner(notesData) {
   }
 }
 
-function submitNote() {
+function submitNote(btn) {
+  if (btn && btn.disabled) return;
   const text = document.getElementById('noteText').value;
   if (!text) return;
   const date = document.getElementById('noteDate').value || new Date().toISOString().slice(0, 10);
   const isChef = chefMode && document.getElementById('noteIsChef').checked;
   const author = document.getElementById('employeeName').value;
-  postOrQueue('addNote', { author, text, date, isChef, pin: isChef ? CHEF_PIN : undefined }).then(() => {
+  withBusy(btn, postOrQueue('addNote', { author, text, date, isChef, pin: isChef ? CHEF_PIN : undefined })).then(() => {
     document.getElementById('noteText').value = '';
     document.getElementById('noteIsChef').checked = false;
     loadNotes();
@@ -678,13 +725,14 @@ function renderReport(data) {
   }
 }
 
-function submitExpense() {
+function submitExpense(btn) {
+  if (btn && btn.disabled) return;
   const description = document.getElementById('newExpenseDesc').value;
   const amount = document.getElementById('newExpenseAmount').value;
   const date = document.getElementById('newExpenseDate').value || new Date().toISOString().slice(0, 10);
   if (!description || !amount) return;
   const addedBy = document.getElementById('employeeName').value;
-  postOrQueue('addExpense', { pin: CHEF_PIN, description, amount, date, addedBy }).then(res => {
+  withBusy(btn, postOrQueue('addExpense', { pin: CHEF_PIN, description, amount, date, addedBy })).then(res => {
     if (res.error) { showMsg('addExpenseMessage', res.error, 'error'); return; }
     document.getElementById('newExpenseDesc').value = '';
     document.getElementById('newExpenseAmount').value = '';
@@ -703,11 +751,12 @@ function exportReportToDocs() {
 
 function toggleEmailReport() { emailReportOpen = !emailReportOpen; updateChefUI(); }
 
-function submitEmailReport() {
+function submitEmailReport(btn) {
+  if (btn && btn.disabled) return;
   const month = document.getElementById('reportMonth').value;
   const toEmail = document.getElementById('reportEmailTo').value;
   if (!toEmail) return;
-  postOrQueue('emailReport', { pin: CHEF_PIN, month, toEmail }).then(res => {
+  withBusy(btn, postOrQueue('emailReport', { pin: CHEF_PIN, month, toEmail })).then(res => {
     if (res.error) { showMsg('emailReportMessage', res.error, 'error'); return; }
     showMsg('emailReportMessage', res.queued ? t('queued') : t('emailSent'), res.queued ? 'info' : 'success');
   });
@@ -752,14 +801,15 @@ function onDocFileChosen() {
   reader.readAsDataURL(file);
 }
 
-function submitDocument() {
+function submitDocument(btn) {
+  if (btn && btn.disabled) return;
   if (!docFileBase64) return;
   const description = document.getElementById('docDescription').value;
   const date = document.getElementById('docDate').value || new Date().toISOString().slice(0, 10);
   const uploadedBy = document.getElementById('employeeName').value;
-  postOrQueue('uploadDocument', {
+  withBusy(btn, postOrQueue('uploadDocument', {
     description, date, uploadedBy, base64Data: docFileBase64, mimeType: docFileMime, filename: 'doc.jpg'
-  }).then(res => {
+  })).then(res => {
     if (res.error) { showMsg('docMessage', res.error, 'error'); return; }
     showMsg('docMessage', res.queued ? t('queued') : t('docUploaded'), res.queued ? 'info' : 'success');
     if (!res.queued) {

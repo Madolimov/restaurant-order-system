@@ -916,7 +916,9 @@ function getDeviceId() {
 }
 
 function initStaffGate() {
-  if (sessionStorage.getItem('staffAccessGranted') === 'true') {
+  // localStorage, not sessionStorage: asked once per device/browser, not once per tab -
+  // it should never come back after the first successful entry on a given phone.
+  if (localStorage.getItem('staffAccessGranted') === 'true') {
     document.getElementById('staff-gate').style.display = 'none';
     return;
   }
@@ -935,7 +937,7 @@ function submitStaffPin(btn) {
   withBusy(btn, apiPost('verifyStaffAccess', { deviceId: getDeviceId(), pin: input.value }).catch(() => ({ error: 'network' }))).then(res => {
     if (res.error === 'disabled') return;
     if (res.success) {
-      sessionStorage.setItem('staffAccessGranted', 'true');
+      localStorage.setItem('staffAccessGranted', 'true');
       document.getElementById('staff-gate').style.display = 'none';
     } else {
       err.textContent = res.error === 'network' ? t('syncError') : t('gateWrong');

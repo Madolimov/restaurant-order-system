@@ -39,8 +39,7 @@ const translations = {
     confirmDeleteProduct: 'Produkt "{name}" wirklich löschen?', productDeleted: 'Produkt gelöscht.',
     gateTitle: 'Zugangscode', gateSubtitle: 'Nur für Mitarbeiter des Restaurants.',
     gateEnter: 'Bestätigen', gateWrong: 'Falscher Code', gateNeedsInternet: 'Internet erforderlich zum ersten Öffnen.',
-    disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.',
-    productCount: 'Bestellte Produktarten'
+    disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -72,8 +71,7 @@ const translations = {
     confirmDeleteProduct: 'Really delete product "{name}"?', productDeleted: 'Product deleted.',
     gateTitle: 'Access Code', gateSubtitle: 'Restaurant staff only.',
     gateEnter: 'Confirm', gateWrong: 'Wrong code', gateNeedsInternet: 'Internet is required the first time you open this.',
-    disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.',
-    productCount: 'Product types ordered'
+    disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -105,8 +103,7 @@ const translations = {
     confirmDeleteProduct: 'Eliminare davvero il prodotto "{name}"?', productDeleted: 'Prodotto eliminato.',
     gateTitle: 'Codice di accesso', gateSubtitle: 'Solo per il personale del ristorante.',
     gateEnter: 'Conferma', gateWrong: 'Codice errato', gateNeedsInternet: 'Internet necessario per il primo accesso.',
-    disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.',
-    productCount: 'Tipi di prodotto ordinati'
+    disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.'
   }
 };
 
@@ -759,15 +756,11 @@ function loadReport() {
 
 function renderReport(data) {
   const fmt = n => n.toLocaleString(currentLang, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const unitSummary = Object.entries(data.unitTotals || {})
-    .map(([unit, qty]) => `${Number(qty.toFixed(2))} ${unit}`.trim())
-    .join(', ');
 
   document.getElementById('reportSummary').innerHTML = `
     <div class="report-total"><span class="label">${t('grandTotal')}</span><span class="value">${fmt(data.grandTotal)} €</span></div>
     <div class="report-subtotal"><span>${t('productsCost')}</span><span>${fmt(data.totalProductCost)} €</span></div>
     <div class="report-subtotal"><span>${t('extraExpenses')}</span><span>${fmt(data.totalExpenses)} €</span></div>
-    <div class="report-subtotal"><span>${t('productCount')}</span><span>${data.productCount || 0}${unitSummary ? ' (' + unitSummary + ')' : ''}</span></div>
   `;
 
   const productsBox = document.getElementById('reportProducts');

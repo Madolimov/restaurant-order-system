@@ -71,11 +71,11 @@
       <span data-i18n="tabCatalog"></span>
     </button>
     <button class="tab-btn" onclick="showTab('basket')" data-tab="basket">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8ZM9 8a3 3 0 0 1 6 0"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2l2.2 12a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8.5H6.2"/></svg>
       <span data-i18n="tabBasket"></span>
     </button>
     <button class="tab-btn" onclick="showTab('delivery')" data-tab="delivery">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16V6h11v10M14 9h4l3 3v4h-2M14 16h6M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM17 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="7" width="12.5" height="9.5" rx="1"/><path d="M14 10h4l3.5 3.5V16.5h-2"/><circle cx="6" cy="19" r="1.7"/><circle cx="16.5" cy="19" r="1.7"/></svg>
       <span data-i18n="tabDelivery"></span>
     </button>
     <button class="tab-btn" onclick="showTab('calendar')" data-tab="calendar">
@@ -127,9 +127,11 @@
       <input type="text" id="newProdDe" data-i18n-placeholder="nameDe" class="field">
       <input type="text" id="newProdEn" data-i18n-placeholder="nameEn" class="field">
       <input type="text" id="newProdIt" data-i18n-placeholder="nameIt" class="field">
-      <input type="text" id="newProdUnit" data-i18n-placeholder="unit" class="field">
+      <select id="newProdUnit" class="field" onchange="onUnitSelectChange()"></select>
+      <input type="text" id="newProdUnitCustom" data-i18n-placeholder="unit" class="field" style="display:none">
       <select id="newProdCategory" class="field" onchange="onCategorySelectChange()"></select>
       <input type="text" id="newProdCategoryCustom" data-i18n-placeholder="newCategoryName" class="field" style="display:none">
+      <div id="newProdIconPicker" class="icon-picker" style="display:none"></div>
       <input type="number" step="0.01" min="0" id="newProdPrice" data-i18n-placeholder="price" class="field">
       <input type="text" id="newProdSupplier" data-i18n-placeholder="supplier" class="field">
       <button class="submit-btn secondary-btn" onclick="submitProduct(this)"><span data-i18n="addProductBtn"></span></button>

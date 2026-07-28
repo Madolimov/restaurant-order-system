@@ -107,14 +107,14 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
   padding: 8px 13px; border: 1.5px solid rgba(255,255,255,.55); border-radius: 20px;
   background: rgba(255,255,255,.12); color: white; font-size: 13px; font-weight: 600; white-space: nowrap;
 }
-.chef-btn svg { width: 16px; height: 16px; }
+.chef-btn svg { width: 18px; height: 18px; }
 .chef-btn.active { background: var(--gold); color: var(--gold-text); border-color: var(--gold); }
 
 .icon-btn {
-  width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.55);
+  width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.55);
   background: rgba(255,255,255,.12); color: white; display: flex; align-items: center; justify-content: center;
 }
-.icon-btn svg { width: 18px; height: 18px; }
+.icon-btn svg { width: 21px; height: 21px; }
 
 .lang-switch { position: relative; }
 .lang-menu {
@@ -146,7 +146,18 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 9px 2px; border: none; background: none; color: var(--text-muted); border-radius: 10px; font-size: 10.5px; font-weight: 600;
 }
-.tab-btn svg { width: 19px; height: 19px; }
+.tab-btn svg { width: 24px; height: 24px; opacity: .8; transition: opacity .15s ease; }
+.tab-btn.active svg { opacity: 1; }
+/* Icons always carry their tab's color, even when inactive - only the label
+   text and background switch on .active, so the bar reads colorful at rest. */
+.tab-btn[data-tab="catalog"] svg { color: var(--cat-vegetables); }
+.tab-btn[data-tab="basket"] svg { color: #c77c00; }
+.tab-btn[data-tab="delivery"] svg { color: var(--cat-dairy); }
+.tab-btn[data-tab="calendar"] svg { color: #a074e8; }
+.tab-btn[data-tab="notes"] svg { color: var(--cat-meat); }
+.tab-btn[data-tab="report"] svg { color: #26a69a; }
+.tab-btn[data-tab="documents"] svg { color: var(--secondary); }
+
 .tab-btn.active { background: var(--card-bg); color: var(--cat-vegetables); box-shadow: 0 2px 6px rgba(0,0,0,.1); }
 .tab-btn[data-tab="basket"].active { color: #c77c00; }
 .tab-btn[data-tab="delivery"].active { color: var(--cat-dairy); }
@@ -308,6 +319,18 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 @keyframes pulse-busy { 0%, 100% { opacity: .55; } 50% { opacity: .8; } }
 .secondary-btn { background: var(--secondary); box-shadow: 0 4px 12px rgba(141,110,99,.3); }
 .bulk-arrive-btn { margin-bottom: 10px; }
+
+.icon-picker {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+  width: 100%; margin-bottom: 10px; padding: 10px; background: var(--bg-grad-2);
+  border-radius: 10px; border: 1.5px solid var(--border);
+}
+.icon-picker button {
+  aspect-ratio: 1; border-radius: 8px; border: 1.5px solid var(--border);
+  background: var(--card-bg); color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+}
+.icon-picker button svg { width: 18px; height: 18px; }
+.icon-picker button.selected { background: var(--accent-soft-bg); border-color: var(--accent); color: var(--accent-dark); }
 
 .chef-only-box {
   margin-top: 18px; padding: 14px; border-radius: 14px; background: var(--chef-bg);

@@ -40,7 +40,8 @@ const translations = {
     gateTitle: 'Zugangscode', gateSubtitle: 'Nur für Mitarbeiter des Restaurants.',
     gateEnter: 'Bestätigen', gateWrong: 'Falscher Code', gateNeedsInternet: 'Internet erforderlich zum ersten Öffnen.',
     disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.',
-    markAllArrived: 'Alles als angekommen markieren', confirmMarkAllArrived: 'Wirklich alle Produkte dieser Bestellung als angekommen markieren?'
+    markAllArrived: 'Alles als angekommen markieren', confirmMarkAllArrived: 'Wirklich alle Produkte dieser Bestellung als angekommen markieren?',
+    customUnitOption: '+ Andere Einheit'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -73,7 +74,8 @@ const translations = {
     gateTitle: 'Access Code', gateSubtitle: 'Restaurant staff only.',
     gateEnter: 'Confirm', gateWrong: 'Wrong code', gateNeedsInternet: 'Internet is required the first time you open this.',
     disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.',
-    markAllArrived: 'Mark all as arrived', confirmMarkAllArrived: 'Really mark every product in this order as arrived?'
+    markAllArrived: 'Mark all as arrived', confirmMarkAllArrived: 'Really mark every product in this order as arrived?',
+    customUnitOption: '+ Other unit'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -106,11 +108,14 @@ const translations = {
     gateTitle: 'Codice di accesso', gateSubtitle: 'Solo per il personale del ristorante.',
     gateEnter: 'Conferma', gateWrong: 'Codice errato', gateNeedsInternet: 'Internet necessario per il primo accesso.',
     disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.',
-    markAllArrived: 'Segna tutto come arrivato', confirmMarkAllArrived: 'Segnare davvero tutti i prodotti di questo ordine come arrivati?'
+    markAllArrived: 'Segna tutto come arrivato', confirmMarkAllArrived: 'Segnare davvero tutti i prodotti di questo ordine come arrivati?',
+    customUnitOption: '+ Altra unità'
   }
 };
 
 const categoryKeys = ['vegetables', 'dairy', 'meat', 'drinks', 'other'];
+const categoryIconKeys = ['bread', 'fruit', 'fish', 'spice', 'frozen', 'cleaning', 'coffee', 'sauce', 'grain', 'oil', 'canned', 'dessert', 'egg', 'cheese', 'box', 'cookie', 'tea', 'juice', 'jam', 'whisk'];
+const commonUnits = ['kg', 'g', 'L', 'ml', 'Stück', 'Packung', 'Kiste', 'Karton', 'Dose', 'Sack'];
 
 const ICONS = {
   vegetables: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5-1 8-5 8-10a6 6 0 0 0-6-6c-5 0-9 4-9 10 0 3 2.5 5.5 7 6Z"/><path d="M15 6c1-2 2-3 4-3M12 6V3"/></svg>',
@@ -118,6 +123,26 @@ const ICONS = {
   meat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3c3 0 6 3 6 6.5S18 17 14 17c-2 0-2.5 1-3.5 2.5S8 22 6 22a3 3 0 0 1-1-5.8"/><circle cx="9" cy="12" r="5"/></svg>',
   drinks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l-1 15a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L7 3ZM6.5 8h11"/></svg>',
   other: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 9-5 9 5-9 5-9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>',
+  bread: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5Z"/><path d="M8 9.5v3M12 8v4M16 9.5v3"/></svg>',
+  fruit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9c-3.5 0-6 2.5-6 6a5 5 0 0 0 5 5c1 0 1.7-.3 2.3-.8.6.5 1.3.8 2.3.8a5 5 0 0 0 5-5c0-3.5-2.5-6-6-6"/><path d="M12 9V6c0-1 .8-2 2-2"/></svg>',
+  fish: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c3-4 8-6 12-4 2 1 4 3 6 4-2 1-4 3-6 4-4 2-9 0-12-4Z"/><path d="M4 9l-1.5-2M4 15l-1.5 2"/><circle cx="8" cy="11" r=".6" fill="currentColor"/></svg>',
+  spice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8l1-4Z"/><path d="M8 7h8l1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L8 7Z"/><path d="M10 12h4M10 15h4"/></svg>',
+  frozen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M4.2 6.5l15.6 11M4.2 17.5l15.6-11"/></svg>',
+  cleaning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h3v3l2 2h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2V2Z"/><path d="M9 12h6"/></svg>',
+  coffee: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9Z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c0 1-1 1-1 2M12 3c0 1-1 1-1 2"/></svg>',
+  sauce: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v3l1.5 1.5A3 3 0 0 1 16 8.6V20a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V8.6a3 3 0 0 1 .5-1.6L10 5V2Z"/><path d="M9 13h6"/></svg>',
+  grain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10l1 5H6l1-5Z"/><path d="M6 8h12l-1.5 12a2 2 0 0 1-2 1.8H9.5a2 2 0 0 1-2-1.8L6 8Z"/></svg>',
+  oil: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6l1 3-2 2v3.5c2 1 3 3 3 5.5a5 5 0 0 1-10 0c0-2.5 1-4.5 3-5.5V7L8 5l1-3Z"/></svg>',
+  canned: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="14" rx="1"/><ellipse cx="12" cy="6" rx="6" ry="1.6"/><path d="M6 10h12"/></svg>',
+  dessert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11c0-3 2.7-5 6-5s6 2 6 5"/><path d="M5 11h14l-1.5 8a2 2 0 0 1-2 1.7H8.5a2 2 0 0 1-2-1.7L5 11Z"/><path d="M12 6V3"/></svg>',
+  egg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C8 8 6 12 6 15a6 6 0 0 0 12 0c0-3-2-7-6-12Z"/></svg>',
+  cheese: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 12 5l9 13H3Z"/><circle cx="10" cy="15" r=".6" fill="currentColor"/><circle cx="14" cy="13.5" r=".6" fill="currentColor"/></svg>',
+  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8 12 4l9 4-9 4-9-4Z"/><path d="M3 8v9l9 4 9-4V8"/><path d="M12 12v9"/></svg>',
+  cookie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="14.5" cy="9" r=".8" fill="currentColor"/><circle cx="15" cy="14.5" r=".8" fill="currentColor"/><circle cx="9.5" cy="15" r=".8" fill="currentColor"/></svg>',
+  tea: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9Z"/><path d="M9 9V5"/><rect x="7.5" y="2" width="3" height="2.2" rx=".4"/></svg>',
+  juice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l-1 15a2 2 0 0 1-2 1.8h-4A2 2 0 0 1 8 19L7 4Z"/><path d="M6.5 8h11"/></svg>',
+  jam: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="13" rx="2"/><path d="M8 7V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v3"/></svg>',
+  whisk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v6"/><path d="M8 5c0 3 1.8 5 4 5s4-2 4-5M9 6.5c0 2.5 1.3 4.5 3 4.5s3-2 3-4.5"/><path d="M12 15v5"/></svg>',
   pending: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
   arrived: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
   missing: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
@@ -142,6 +167,8 @@ let emailReportOpen = false;
 let docFileBase64 = null;
 let docFileMime = null;
 let editingProductId = null;
+let categoryIcons = {};
+let selectedCategoryIcon = 'other';
 const collapsedCategories = {};
 
 // ---------- sound feedback ----------
@@ -329,12 +356,48 @@ function toggleAddProduct() {
 
 function resetProductForm() {
   editingProductId = null;
-  ['newProdDe', 'newProdEn', 'newProdIt', 'newProdUnit', 'newProdPrice', 'newProdSupplier'].forEach(id => document.getElementById(id).value = '');
+  ['newProdDe', 'newProdEn', 'newProdIt', 'newProdPrice', 'newProdSupplier'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newProdUnitCustom').value = '';
   document.getElementById('newProdCategoryCustom').value = '';
+  selectedCategoryIcon = 'other';
+  renderUnitOptions();
+  onUnitSelectChange();
   renderCategoryOptions();
   onCategorySelectChange();
   document.querySelector('#addProductBox h3 span').textContent = t('addProductTitle');
   document.querySelector('#addProductBox .submit-btn span').textContent = t('addProductBtn');
+}
+
+function renderUnitOptions() {
+  const select = document.getElementById('newProdUnit');
+  select.innerHTML = '';
+  commonUnits.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u;
+    opt.textContent = u;
+    select.appendChild(opt);
+  });
+  const customOpt = document.createElement('option');
+  customOpt.value = '__custom__';
+  customOpt.textContent = t('customUnitOption');
+  select.appendChild(customOpt);
+}
+
+function onUnitSelectChange() {
+  const isCustom = document.getElementById('newProdUnit').value === '__custom__';
+  document.getElementById('newProdUnitCustom').style.display = isCustom ? 'block' : 'none';
+}
+
+function renderIconPicker() {
+  const box = document.getElementById('newProdIconPicker');
+  box.innerHTML = categoryIconKeys.map(key =>
+    `<button type="button" class="${key === selectedCategoryIcon ? 'selected' : ''}" onclick="pickCategoryIcon('${key}')" aria-label="${key}">${ICONS[key]}</button>`
+  ).join('');
+}
+
+function pickCategoryIcon(key) {
+  selectedCategoryIcon = key;
+  renderIconPicker();
 }
 function toggleAddExpense() { addExpenseOpen = !addExpenseOpen; updateChefUI(); }
 
@@ -349,6 +412,7 @@ function applyTranslations() {
   updateChefUI();
   renderCatalog();
   renderCategoryOptions();
+  renderUnitOptions();
   if (activeTab === 'basket') loadBasket();
   if (activeTab === 'delivery') loadDelivery();
   if (activeTab === 'calendar') loadCalendarDate();
@@ -406,6 +470,14 @@ function loadProducts() {
   }).catch(() => { document.getElementById('loading-products').style.display = 'none'; });
 }
 
+function loadCategories() {
+  apiGet('categories').then(data => {
+    categoryIcons = {};
+    data.forEach(c => { categoryIcons[c.name] = c.iconKey; });
+    renderCatalog();
+  }).catch(() => {});
+}
+
 function categoryLabel(cat) {
   return categoryKeys.includes(cat) ? t('cat' + cat.charAt(0).toUpperCase() + cat.slice(1)) : cat.charAt(0).toUpperCase() + cat.slice(1);
 }
@@ -437,7 +509,7 @@ function renderCatalog() {
     header.className = 'category-header cat-' + (categoryKeys.includes(cat) ? cat : 'other');
     header.classList.toggle('collapsed', collapsed);
     header.innerHTML = `
-      <button type="button" class="category-toggle">${ICONS[categoryKeys.includes(cat) ? cat : 'other']}<span>${categoryLabel(cat)}</span><small class="cat-count">${items.length}</small>${ICONS.chevron}</button>
+      <button type="button" class="category-toggle">${ICONS[categoryKeys.includes(cat) ? cat : (categoryIcons[cat] || 'other')]}<span>${categoryLabel(cat)}</span><small class="cat-count">${items.length}</small>${ICONS.chevron}</button>
       ${chefMode ? `<button type="button" class="cat-add-btn" aria-label="+"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>` : ''}
     `;
     header.querySelector('.category-toggle').onclick = () => { collapsedCategories[cat] = !collapsedCategories[cat]; renderCatalog(); };
@@ -488,7 +560,16 @@ function startEditProduct(id) {
   document.getElementById('newProdDe').value = product.name_de || '';
   document.getElementById('newProdEn').value = product.name_en || '';
   document.getElementById('newProdIt').value = product.name_it || '';
-  document.getElementById('newProdUnit').value = product.unit || '';
+  renderUnitOptions();
+  const unitSelect = document.getElementById('newProdUnit');
+  if ([...unitSelect.options].some(o => o.value === product.unit)) {
+    unitSelect.value = product.unit;
+    document.getElementById('newProdUnitCustom').value = '';
+  } else {
+    unitSelect.value = '__custom__';
+    document.getElementById('newProdUnitCustom').value = product.unit || '';
+  }
+  onUnitSelectChange();
   document.getElementById('newProdPrice').value = product.price || '';
   document.getElementById('newProdSupplier').value = product.supplier || '';
   renderCategoryOptions();
@@ -564,6 +645,8 @@ function renderCategoryOptions() {
 function onCategorySelectChange() {
   const isNew = document.getElementById('newProdCategory').value === '__new__';
   document.getElementById('newProdCategoryCustom').style.display = isNew ? 'block' : 'none';
+  document.getElementById('newProdIconPicker').style.display = isNew ? 'grid' : 'none';
+  if (isNew) renderIconPicker();
 }
 
 function submitToBasket(btn) {
@@ -582,12 +665,15 @@ function submitToBasket(btn) {
 function submitProduct(btn) {
   if (btn && btn.disabled) return;
   const categorySelect = document.getElementById('newProdCategory').value;
-  const category = categorySelect === '__new__' ? document.getElementById('newProdCategoryCustom').value.trim() : categorySelect;
+  const isNewCategory = categorySelect === '__new__';
+  const category = isNewCategory ? document.getElementById('newProdCategoryCustom').value.trim() : categorySelect;
+  const unitSelect = document.getElementById('newProdUnit').value;
+  const unit = unitSelect === '__custom__' ? document.getElementById('newProdUnitCustom').value.trim() : unitSelect;
   const product = {
     name_de: document.getElementById('newProdDe').value,
     name_en: document.getElementById('newProdEn').value,
     name_it: document.getElementById('newProdIt').value,
-    unit: document.getElementById('newProdUnit').value,
+    unit,
     category: category || 'other',
     price: document.getElementById('newProdPrice').value,
     supplier: document.getElementById('newProdSupplier').value
@@ -598,10 +684,14 @@ function submitProduct(btn) {
   const action = isEdit ? 'updateProduct' : 'addProduct';
   const payload = isEdit ? { pin: CHEF_PIN, id: editingProductId, product } : { pin: CHEF_PIN, product };
 
-  withBusy(btn, postOrQueue(action, payload)).then(res => {
+  const savePromise = (isNewCategory && category)
+    ? postOrQueue('addCategory', { pin: CHEF_PIN, name: category, iconKey: selectedCategoryIcon }).then(() => postOrQueue(action, payload))
+    : postOrQueue(action, payload);
+
+  withBusy(btn, savePromise).then(res => {
     if (res.error) { showMsg('addProductMessage', res.error, 'error'); return; }
     showMsg('addProductMessage', res.queued ? t('queued') : t('productAdded'), res.queued ? 'info' : 'success');
-    if (!res.queued) { playSuccessSound(); resetProductForm(); addProductOpen = false; updateChefUI(); loadProducts(); }
+    if (!res.queued) { playSuccessSound(); resetProductForm(); addProductOpen = false; updateChefUI(); loadProducts(); loadCategories(); }
   });
 }
 
@@ -998,4 +1088,5 @@ document.getElementById('noteDate').value = new Date().toISOString().slice(0, 10
 applyTranslations();
 initStaffGate();
 loadProducts();
+loadCategories();
 flushPending();

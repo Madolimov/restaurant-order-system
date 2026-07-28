@@ -1,7 +1,7 @@
 // ==== SETUP: paste your deployed Google Apps Script Web App URL below ====
 const API_URL = 'https://script.google.com/macros/s/AKfycbwvqrC1fCl5jRJIfBizIIKquHS13YBhrMyuSgtuy5IzdwC4HWhR69MwzTBTrHQXXCy5/exec';
 const SECRET_KEY = '3058d732b248b00519bae478e685e280'; // must match Code.gs
-const CHEF_PIN = '1525'; // must match Code.gs - chef-only actions are re-checked on the server too
+const CHEF_PIN = '0404'; // must match Code.gs - chef-only actions are re-checked on the server too
 // ===========================================================================
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -33,7 +33,9 @@ const translations = {
     noOrderYet: 'Noch keine Bestellung.', statusPending: 'Ausstehend', statusArrived: 'Angekommen', statusMissing: 'Fehlt',
     notePlaceholder: 'Notiz schreiben...', markChefNote: 'Als Chef-Notiz markieren', addNoteBtn: 'Notiz hinzufügen',
     chefNoteLabel: 'Notiz vom Chef', queued: 'Kein Internet: wird automatisch gesendet, sobald Internet da ist.',
-    syncError: 'Fehler beim Laden. Erneut versuchen.'
+    syncError: 'Fehler beim Laden. Erneut versuchen.',
+    searchPlaceholder: 'Produkt suchen...', noSearchResults: 'Kein Produkt gefunden.',
+    cancelBtn: 'Abbrechen', confirmBtn: 'Bestätigen'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -59,7 +61,9 @@ const translations = {
     noOrderYet: 'No order yet.', statusPending: 'Pending', statusArrived: 'Arrived', statusMissing: 'Missing',
     notePlaceholder: 'Write a note...', markChefNote: 'Mark as chef note', addNoteBtn: 'Add note',
     chefNoteLabel: 'Note from the chef', queued: 'No internet: will be sent automatically once internet is back.',
-    syncError: 'Failed to load. Retry.'
+    syncError: 'Failed to load. Retry.',
+    searchPlaceholder: 'Search product...', noSearchResults: 'No product found.',
+    cancelBtn: 'Cancel', confirmBtn: 'Confirm'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -85,7 +89,9 @@ const translations = {
     noOrderYet: 'Nessun ordine ancora.', statusPending: 'In attesa', statusArrived: 'Arrivato', statusMissing: 'Mancante',
     notePlaceholder: 'Scrivi una nota...', markChefNote: 'Segna come nota dello chef', addNoteBtn: 'Aggiungi nota',
     chefNoteLabel: 'Nota dello chef', queued: 'Senza internet: verrà inviato automaticamente quando torna internet.',
-    syncError: 'Caricamento fallito. Riprova.'
+    syncError: 'Caricamento fallito. Riprova.',
+    searchPlaceholder: 'Cerca prodotto...', noSearchResults: 'Nessun prodotto trovato.',
+    cancelBtn: 'Annulla', confirmBtn: 'Conferma'
   }
 };
 
@@ -198,15 +204,41 @@ function onChefButton() {
     updateChefUI();
     return;
   }
-  const pin = prompt(t('chefPinPrompt'));
-  if (pin === null) return;
-  if (pin === CHEF_PIN) {
+  openChefPinModal();
+}
+
+function openChefPinModal() {
+  const modal = document.getElementById('chef-pin-modal');
+  const input = document.getElementById('chefPinInput');
+  const err = document.getElementById('chefPinError');
+  input.value = '';
+  err.style.display = 'none';
+  modal.style.display = 'flex';
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeChefPinModal() {
+  document.getElementById('chef-pin-modal').style.display = 'none';
+}
+
+function confirmChefPin() {
+  const input = document.getElementById('chefPinInput');
+  const err = document.getElementById('chefPinError');
+  if (input.value === CHEF_PIN) {
     chefMode = true;
     sessionStorage.setItem('chefMode', 'true');
     updateChefUI();
+    closeChefPinModal();
   } else {
-    alert(t('chefPinWrong'));
+    err.textContent = t('chefPinWrong');
+    err.style.display = 'block';
+    input.value = '';
+    input.focus();
   }
+}
+
+function onChefPinKey(e) {
+  if (e.key === 'Enter') confirmChefPin();
 }
 
 function updateChefUI() {
@@ -303,6 +335,10 @@ function loadProducts() {
   apiGet('products').then(data => {
     products = data;
     localStorage.setItem(CACHED_PRODUCTS_KEY, JSON.stringify(data));
+    if (!localStorage.getItem('collapsedInit') && data.length > 20) {
+      Array.from(new Set(data.map(p => p.category || 'other'))).forEach(c => { collapsedCategories[c] = true; });
+      localStorage.setItem('collapsedInit', '1');
+    }
     document.getElementById('loading-products').style.display = 'none';
     renderCatalog();
   }).catch(() => { document.getElementById('loading-products').style.display = 'none'; });
@@ -315,20 +351,33 @@ function categoryLabel(cat) {
 function renderCatalog() {
   const list = document.getElementById('catalogList');
   list.innerHTML = '';
+  const searchInput = document.getElementById('catalogSearch');
+  const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
+  const searching = query.length > 0;
+  const matches = p => !searching || ['name_de', 'name_en', 'name_it'].some(k => (p[k] || '').toLowerCase().includes(query));
+
   const extraCats = Array.from(new Set(products.map(p => p.category || 'other').filter(c => !categoryKeys.includes(c))));
   const allCats = categoryKeys.filter(cat => products.some(p => (p.category || 'other') === cat)).concat(extraCats);
 
-  allCats.forEach(cat => {
-    const items = products.filter(p => (p.category || 'other') === cat);
-    if (items.length === 0) return;
-    const collapsed = !!collapsedCategories[cat];
+  let anyMatch = false;
 
-    const header = document.createElement('button');
-    header.type = 'button';
+  allCats.forEach(cat => {
+    const allItemsInCat = products.filter(p => (p.category || 'other') === cat);
+    const items = allItemsInCat.filter(matches);
+    if (allItemsInCat.length === 0 || (searching && items.length === 0)) return;
+    anyMatch = true;
+    const collapsed = searching ? false : !!collapsedCategories[cat];
+
+    const header = document.createElement('div');
     header.className = 'category-header cat-' + (categoryKeys.includes(cat) ? cat : 'other');
-    header.innerHTML = `${ICONS[categoryKeys.includes(cat) ? cat : 'other']}<span>${categoryLabel(cat)}</span><small class="cat-count">${items.length}</small>${ICONS.chevron}`;
     header.classList.toggle('collapsed', collapsed);
-    header.onclick = () => { collapsedCategories[cat] = !collapsedCategories[cat]; renderCatalog(); };
+    header.innerHTML = `
+      <button type="button" class="category-toggle">${ICONS[categoryKeys.includes(cat) ? cat : 'other']}<span>${categoryLabel(cat)}</span><small class="cat-count">${items.length}</small>${ICONS.chevron}</button>
+      ${chefMode ? `<button type="button" class="cat-add-btn" aria-label="+"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button>` : ''}
+    `;
+    header.querySelector('.category-toggle').onclick = () => { collapsedCategories[cat] = !collapsedCategories[cat]; renderCatalog(); };
+    const addBtn = header.querySelector('.cat-add-btn');
+    if (addBtn) addBtn.onclick = () => quickAddToCategory(cat);
     list.appendChild(header);
 
     if (collapsed) return;
@@ -349,6 +398,21 @@ function renderCatalog() {
       list.appendChild(row);
     });
   });
+
+  if (searching && !anyMatch) {
+    list.innerHTML = `<div class="empty-state">${ICONS.empty}<p>${t('noSearchResults')}</p></div>`;
+  }
+}
+
+function quickAddToCategory(cat) {
+  addProductOpen = true;
+  editingProductId = null;
+  resetProductForm();
+  const select = document.getElementById('newProdCategory');
+  if ([...select.options].some(o => o.value === cat)) select.value = cat;
+  onCategorySelectChange();
+  updateChefUI();
+  document.getElementById('addProductBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function startEditProduct(id) {

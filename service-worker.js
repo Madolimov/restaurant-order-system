@@ -1,4 +1,4 @@
-const CACHE_NAME = 'restoran-buyurtma-v8';
+const CACHE_NAME = 'restoran-buyurtma-v9';
 const SHELL_FILES = [
   './',
   './index.html',
@@ -10,8 +10,13 @@ const SHELL_FILES = [
 ];
 
 self.addEventListener('install', event => {
+  // {cache:'reload'} bypasses the browser's own HTTP cache (GitHub Pages sends
+  // max-age=600 on these files) - without it, a fresh SW version could still
+  // precache a stale copy for up to 10 minutes after a deploy.
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_FILES))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(SHELL_FILES.map(url => fetch(url, { cache: 'reload' }).then(res => cache.put(url, res))))
+    )
   );
   self.skipWaiting();
 });

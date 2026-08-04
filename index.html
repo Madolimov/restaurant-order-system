@@ -228,6 +228,17 @@
       <button class="submit-btn secondary-btn" onclick="submitExpense(this)" data-i18n="addExpenseBtn"></button>
       <div id="addExpenseMessage" class="msg"></div>
     </div>
+
+    <div id="accessLogRow" class="chef-only-inline" style="display:none">
+      <span data-i18n="accessLogTitle"></span>
+      <button class="plus-btn" onclick="toggleAccessLog()" aria-label="view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <div id="accessLogBox" class="chef-only-box" style="display:none">
+      <div id="accessLogSummary" style="width:100%"></div>
+      <div id="accessLogList" style="width:100%"></div>
+    </div>
   </div>
 
   <!-- DOCUMENTS -->

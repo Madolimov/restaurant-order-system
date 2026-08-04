@@ -41,7 +41,8 @@ const translations = {
     gateEnter: 'Bestätigen', gateWrong: 'Falscher Code', gateNeedsInternet: 'Internet erforderlich zum ersten Öffnen.',
     disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.',
     markAllArrived: 'Alles als angekommen markieren', confirmMarkAllArrived: 'Wirklich alle Produkte dieser Bestellung als angekommen markieren?',
-    customUnitOption: '+ Andere Einheit'
+    customUnitOption: '+ Andere Einheit',
+    accessLogTitle: 'Zugriffsverlauf', distinctDevices: 'Verschiedene Geräte', deniedAttempts: 'Abgelehnte Versuche'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -75,7 +76,8 @@ const translations = {
     gateEnter: 'Confirm', gateWrong: 'Wrong code', gateNeedsInternet: 'Internet is required the first time you open this.',
     disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.',
     markAllArrived: 'Mark all as arrived', confirmMarkAllArrived: 'Really mark every product in this order as arrived?',
-    customUnitOption: '+ Other unit'
+    customUnitOption: '+ Other unit',
+    accessLogTitle: 'Access log', distinctDevices: 'Distinct devices', deniedAttempts: 'Denied attempts'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -109,7 +111,8 @@ const translations = {
     gateEnter: 'Conferma', gateWrong: 'Codice errato', gateNeedsInternet: 'Internet necessario per il primo accesso.',
     disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.',
     markAllArrived: 'Segna tutto come arrivato', confirmMarkAllArrived: 'Segnare davvero tutti i prodotti di questo ordine come arrivati?',
-    customUnitOption: '+ Altra unità'
+    customUnitOption: '+ Altra unità',
+    accessLogTitle: 'Cronologia accessi', distinctDevices: 'Dispositivi diversi', deniedAttempts: 'Tentativi rifiutati'
   }
 };
 
@@ -164,6 +167,7 @@ let activeTab = 'catalog';
 let addProductOpen = false;
 let addExpenseOpen = false;
 let emailReportOpen = false;
+let accessLogOpen = false;
 let docFileBase64 = null;
 let docFileMime = null;
 let editingProductId = null;
@@ -341,6 +345,7 @@ function updateChefUI() {
   document.getElementById('addProductBox').style.display = (chefMode && addProductOpen) ? 'flex' : 'none';
   document.getElementById('addExpenseBox').style.display = (chefMode && addExpenseOpen) ? 'flex' : 'none';
   document.getElementById('emailReportBox').style.display = (chefMode && emailReportOpen) ? 'flex' : 'none';
+  document.getElementById('accessLogBox').style.display = (chefMode && accessLogOpen) ? 'flex' : 'none';
   const btn = document.getElementById('chef-btn');
   const label = document.getElementById('chef-btn-label');
   btn.classList.toggle('active', chefMode);
@@ -915,6 +920,35 @@ function exportReportToDocs() {
 }
 
 function toggleEmailReport() { emailReportOpen = !emailReportOpen; updateChefUI(); }
+
+function toggleAccessLog() {
+  accessLogOpen = !accessLogOpen;
+  updateChefUI();
+  if (accessLogOpen) loadAccessLog();
+}
+
+function loadAccessLog() {
+  document.getElementById('accessLogList').innerHTML = t('loading');
+  fetch(`${API_URL}?action=accessLog&key=${SECRET_KEY}&pin=${CHEF_PIN}`)
+    .then(r => r.json())
+    .then(renderAccessLog)
+    .catch(() => { document.getElementById('accessLogList').innerHTML = t('syncError'); });
+}
+
+function renderAccessLog(data) {
+  if (data.error) { document.getElementById('accessLogList').innerHTML = data.error; return; }
+  document.getElementById('accessLogSummary').innerHTML = `
+    <div class="report-subtotal"><span>${t('distinctDevices')}</span><span>${data.distinctDevices}</span></div>
+    <div class="report-subtotal"><span>${t('deniedAttempts')}</span><span>${data.deniedCount}</span></div>
+  `;
+  const list = document.getElementById('accessLogList');
+  if (data.entries.length === 0) { list.innerHTML = `<div class="empty-state">${ICONS.empty}<p>-</p></div>`; return; }
+  list.innerHTML = data.entries.map(e => {
+    const shortId = e.deviceId ? e.deviceId.slice(0, 10) : '-';
+    const color = e.result === 'granted' ? 'var(--accent-dark)' : 'var(--danger)';
+    return `<div class="report-row"><span>${shortId}<div class="qty">${e.timestamp}</div></span><span class="cost" style="color:${color}">${e.result}</span></div>`;
+  }).join('');
+}
 
 function submitEmailReport(btn) {
   if (btn && btn.disabled) return;

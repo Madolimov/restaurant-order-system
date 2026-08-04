@@ -402,6 +402,8 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .device-row .unblock-btn {
   width: auto; padding: 6px 12px; margin-top: 0; font-size: 12px; box-shadow: none; border-radius: 16px;
 }
+.devices-modal-box { max-width: 400px; }
+.devices-modal-list { max-height: 50vh; overflow-y: auto; }
 
 .gate-overlay {
   position: fixed; inset: 0; z-index: 2000;

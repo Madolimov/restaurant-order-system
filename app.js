@@ -42,7 +42,11 @@ const translations = {
     disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.',
     markAllArrived: 'Alles als angekommen markieren', confirmMarkAllArrived: 'Wirklich alle Produkte dieser Bestellung als angekommen markieren?',
     customUnitOption: '+ Andere Einheit',
-    accessLogTitle: 'Zugriffsverlauf', distinctDevices: 'Verschiedene Geräte', deniedAttempts: 'Abgelehnte Versuche'
+    accessLogTitle: 'Zugriffsverlauf', distinctDevices: 'Verschiedene Geräte', deniedAttempts: 'Abgelehnte Versuche',
+    totalDevices: 'Geräte', blockedDevices: 'Gesperrt', lastSeen: 'Zuletzt aktiv',
+    blockDeviceBtn: 'Gerät sperren', unblockDeviceBtn: 'Entsperren',
+    confirmBlockDevice: 'Dieses Gerät wirklich sperren? Es muss den Zugangscode erneut eingeben.',
+    deviceBlocked: 'Gesperrt', deviceRevokedMsg: 'Der Zugriff für dieses Gerät wurde vom Chef entzogen.'
   },
   en: {
     title: 'Order List', loading: 'Loading...',
@@ -77,7 +81,11 @@ const translations = {
     disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.',
     markAllArrived: 'Mark all as arrived', confirmMarkAllArrived: 'Really mark every product in this order as arrived?',
     customUnitOption: '+ Other unit',
-    accessLogTitle: 'Access log', distinctDevices: 'Distinct devices', deniedAttempts: 'Denied attempts'
+    accessLogTitle: 'Access log', distinctDevices: 'Distinct devices', deniedAttempts: 'Denied attempts',
+    totalDevices: 'Devices', blockedDevices: 'Blocked', lastSeen: 'Last active',
+    blockDeviceBtn: 'Block device', unblockDeviceBtn: 'Unblock',
+    confirmBlockDevice: 'Really block this device? It will have to enter the access code again.',
+    deviceBlocked: 'Blocked', deviceRevokedMsg: 'Access for this device has been revoked by the chef.'
   },
   it: {
     title: 'Lista Ordini', loading: 'Caricamento...',
@@ -112,7 +120,11 @@ const translations = {
     disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.',
     markAllArrived: 'Segna tutto come arrivato', confirmMarkAllArrived: 'Segnare davvero tutti i prodotti di questo ordine come arrivati?',
     customUnitOption: '+ Altra unità',
-    accessLogTitle: 'Cronologia accessi', distinctDevices: 'Dispositivi diversi', deniedAttempts: 'Tentativi rifiutati'
+    accessLogTitle: 'Cronologia accessi', distinctDevices: 'Dispositivi diversi', deniedAttempts: 'Tentativi rifiutati',
+    totalDevices: 'Dispositivi', blockedDevices: 'Bloccati', lastSeen: 'Ultima attività',
+    blockDeviceBtn: 'Blocca dispositivo', unblockDeviceBtn: 'Sblocca',
+    confirmBlockDevice: 'Bloccare davvero questo dispositivo? Dovrà inserire di nuovo il codice di accesso.',
+    deviceBlocked: 'Bloccato', deviceRevokedMsg: "L'accesso per questo dispositivo è stato revocato dallo chef."
   }
 };
 
@@ -929,25 +941,46 @@ function toggleAccessLog() {
 
 function loadAccessLog() {
   document.getElementById('accessLogList').innerHTML = t('loading');
-  fetch(`${API_URL}?action=accessLog&key=${SECRET_KEY}&pin=${CHEF_PIN}`)
+  fetch(`${API_URL}?action=devices&key=${SECRET_KEY}&pin=${CHEF_PIN}`)
     .then(r => r.json())
-    .then(renderAccessLog)
+    .then(renderDevices)
     .catch(() => { document.getElementById('accessLogList').innerHTML = t('syncError'); });
 }
 
-function renderAccessLog(data) {
+// Shows one row per device (not a flat log) so the chef can recognize a device by its
+// recent activity and revoke it - blocking calls verifyStaffAccess's own PIN check on
+// that device's next request, forcing it back to the staff PIN gate.
+function renderDevices(data) {
   if (data.error) { document.getElementById('accessLogList').innerHTML = data.error; return; }
+  const devices = data.devices || [];
   document.getElementById('accessLogSummary').innerHTML = `
-    <div class="report-subtotal"><span>${t('distinctDevices')}</span><span>${data.distinctDevices}</span></div>
-    <div class="report-subtotal"><span>${t('deniedAttempts')}</span><span>${data.deniedCount}</span></div>
+    <div class="report-subtotal"><span>${t('totalDevices')}</span><span>${devices.length}</span></div>
+    <div class="report-subtotal"><span>${t('blockedDevices')}</span><span>${devices.filter(d => d.blocked).length}</span></div>
   `;
   const list = document.getElementById('accessLogList');
-  if (data.entries.length === 0) { list.innerHTML = `<div class="empty-state">${ICONS.empty}<p>-</p></div>`; return; }
-  list.innerHTML = data.entries.map(e => {
-    const shortId = e.deviceId ? e.deviceId.slice(0, 10) : '-';
-    const color = e.result === 'granted' ? 'var(--accent-dark)' : 'var(--danger)';
-    return `<div class="report-row"><span>${shortId}<div class="qty">${e.timestamp}</div></span><span class="cost" style="color:${color}">${e.result}</span></div>`;
+  if (devices.length === 0) { list.innerHTML = `<div class="empty-state">${ICONS.empty}<p>-</p></div>`; return; }
+  list.innerHTML = devices.map(d => {
+    const shortId = d.deviceId ? d.deviceId.slice(0, 10) : '-';
+    const meta = `${t('lastSeen')}: ${d.lastSeen}${d.blocked ? ` · ${t('deviceBlocked')}` : ''}`;
+    const actionBtn = d.blocked
+      ? `<button type="button" class="secondary-btn unblock-btn" onclick="toggleDeviceBlock(this,'${d.deviceId}',false)">${t('unblockDeviceBtn')}</button>`
+      : `<button type="button" class="delete-btn" onclick="toggleDeviceBlock(this,'${d.deviceId}',true)" aria-label="block">${ICONS.trash}</button>`;
+    return `<div class="report-row device-row${d.blocked ? ' blocked' : ''}">
+      <span>${shortId}<div class="qty">${meta}</div></span>
+      ${actionBtn}
+    </div>`;
   }).join('');
+}
+
+function toggleDeviceBlock(btn, deviceId, block) {
+  if (btn.disabled) return;
+  const doIt = () => {
+    withBusy(btn, postOrQueue(block ? 'blockDevice' : 'unblockDevice', { pin: CHEF_PIN, deviceId })).then(res => {
+      if (res.error) return;
+      loadAccessLog();
+    });
+  };
+  if (block) showConfirm(t('confirmBlockDevice'), doIt); else doIt();
 }
 
 function submitEmailReport(btn) {
@@ -1071,9 +1104,32 @@ function initStaffGate() {
   // it should never come back after the first successful entry on a given phone.
   if (localStorage.getItem('staffAccessGranted') === 'true') {
     document.getElementById('staff-gate').style.display = 'none';
+    checkDeviceRevocation();
     return;
   }
   setTimeout(() => document.getElementById('staffPinInput').focus(), 100);
+}
+
+// A device that already has staffAccessGranted in localStorage never calls
+// verifyStaffAccess again on its own, so a chef blocking it from the Access Log has
+// no effect until this runs - checked on every load and periodically while the app
+// stays open (installed PWAs can sit open for days), so a revoked device gets sent
+// back to the PIN gate without needing physical access to that phone.
+function checkDeviceRevocation() {
+  if (localStorage.getItem('staffAccessGranted') !== 'true') return;
+  fetch(`${API_URL}?action=checkDeviceStatus&key=${SECRET_KEY}&deviceId=${encodeURIComponent(getDeviceId())}`)
+    .then(r => r.json())
+    .then(res => {
+      if (res.blocked) {
+        localStorage.removeItem('staffAccessGranted');
+        const gate = document.getElementById('staff-gate');
+        const err = document.getElementById('staffGateError');
+        err.textContent = t('deviceRevokedMsg');
+        err.style.display = 'block';
+        gate.style.display = 'flex';
+      }
+    })
+    .catch(() => {});
 }
 
 function submitStaffPin(btn) {
@@ -1091,7 +1147,7 @@ function submitStaffPin(btn) {
       localStorage.setItem('staffAccessGranted', 'true');
       document.getElementById('staff-gate').style.display = 'none';
     } else {
-      err.textContent = res.error === 'network' ? t('syncError') : t('gateWrong');
+      err.textContent = res.error === 'network' ? t('syncError') : (res.blocked ? t('deviceRevokedMsg') : t('gateWrong'));
       err.style.display = 'block';
       input.value = '';
       input.focus();
@@ -1113,6 +1169,7 @@ function showSystemDisabled() {
 window.addEventListener('online', () => { updateOfflineBanner(); flushPending(); });
 window.addEventListener('offline', updateOfflineBanner);
 setInterval(flushPending, 30000);
+setInterval(checkDeviceRevocation, 5 * 60000);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('service-worker.js').catch(() => {}); });

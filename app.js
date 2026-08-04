@@ -179,7 +179,6 @@ let activeTab = 'catalog';
 let addProductOpen = false;
 let addExpenseOpen = false;
 let emailReportOpen = false;
-let accessLogOpen = false;
 let docFileBase64 = null;
 let docFileMime = null;
 let editingProductId = null;
@@ -357,7 +356,7 @@ function updateChefUI() {
   document.getElementById('addProductBox').style.display = (chefMode && addProductOpen) ? 'flex' : 'none';
   document.getElementById('addExpenseBox').style.display = (chefMode && addExpenseOpen) ? 'flex' : 'none';
   document.getElementById('emailReportBox').style.display = (chefMode && emailReportOpen) ? 'flex' : 'none';
-  document.getElementById('accessLogBox').style.display = (chefMode && accessLogOpen) ? 'flex' : 'none';
+  document.getElementById('devices-btn').style.display = chefMode ? 'flex' : 'none';
   const btn = document.getElementById('chef-btn');
   const label = document.getElementById('chef-btn-label');
   btn.classList.toggle('active', chefMode);
@@ -933,10 +932,13 @@ function exportReportToDocs() {
 
 function toggleEmailReport() { emailReportOpen = !emailReportOpen; updateChefUI(); }
 
-function toggleAccessLog() {
-  accessLogOpen = !accessLogOpen;
-  updateChefUI();
-  if (accessLogOpen) loadAccessLog();
+function openDevicesModal() {
+  document.getElementById('devices-modal').style.display = 'flex';
+  loadAccessLog();
+}
+
+function closeDevicesModal() {
+  document.getElementById('devices-modal').style.display = 'none';
 }
 
 function loadAccessLog() {

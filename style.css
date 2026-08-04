@@ -398,6 +398,11 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .report-row .qty { color: var(--text-muted-2); font-size: 12.5px; }
 .report-row .cost { font-weight: 700; font-variant-numeric: tabular-nums; }
 
+.device-row.blocked { opacity: .6; }
+.device-row .unblock-btn {
+  width: auto; padding: 6px 12px; margin-top: 0; font-size: 12px; box-shadow: none; border-radius: 16px;
+}
+
 .gate-overlay {
   position: fixed; inset: 0; z-index: 2000;
   background: linear-gradient(160deg, var(--header-grad-1), var(--header-grad-2));

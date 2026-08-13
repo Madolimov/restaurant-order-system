@@ -28,7 +28,7 @@ const translations = {
     saveAndSend: 'Speichern & Senden', accountantEmail: 'E-Mail des Buchhalters', sendEmailBtn: 'Per E-Mail senden', emailSent: 'E-Mail gesendet!',
     savedToDocuments: 'Als PDF in Dokumenten gespeichert!',
     catVegetables: 'Gemüse', catDairy: 'Milchprodukte', catMeat: 'Fleisch', catDrinks: 'Getränke', catOther: 'Sonstiges',
-    basketEmpty: 'Der Warenkorb ist leer.', finalizeBtn: 'Bestellung abschließen (nur Chef)',
+    basketEmpty: 'Der Warenkorb ist leer.', finalizeBtn: 'Bestellung abschließen (nur Chef)', basketTotal: 'Summe im Warenkorb',
     orderFinalized: 'Bestellung abgeschlossen!', basketEmptyError: 'Warenkorb ist leer.',
     noOrderYet: 'Noch keine Bestellung.', statusPending: 'Ausstehend', statusArrived: 'Angekommen', statusMissing: 'Fehlt',
     notePlaceholder: 'Notiz schreiben...', markChefNote: 'Als Chef-Notiz markieren', addNoteBtn: 'Notiz hinzufügen',
@@ -68,7 +68,7 @@ const translations = {
     saveAndSend: 'Save & Send', accountantEmail: "Accountant's email", sendEmailBtn: 'Send by email', emailSent: 'Email sent!',
     savedToDocuments: 'Saved as PDF in Documents!',
     catVegetables: 'Vegetables', catDairy: 'Dairy', catMeat: 'Meat', catDrinks: 'Drinks', catOther: 'Other',
-    basketEmpty: 'The basket is empty.', finalizeBtn: 'Finalize order (chef only)',
+    basketEmpty: 'The basket is empty.', finalizeBtn: 'Finalize order (chef only)', basketTotal: 'Basket total',
     orderFinalized: 'Order finalized!', basketEmptyError: 'Basket is empty.',
     noOrderYet: 'No order yet.', statusPending: 'Pending', statusArrived: 'Arrived', statusMissing: 'Missing',
     notePlaceholder: 'Write a note...', markChefNote: 'Mark as chef note', addNoteBtn: 'Add note',
@@ -108,7 +108,7 @@ const translations = {
     saveAndSend: 'Salva e invia', accountantEmail: 'Email del commercialista', sendEmailBtn: 'Invia per email', emailSent: 'Email inviata!',
     savedToDocuments: 'Salvato come PDF in Documenti!',
     catVegetables: 'Verdure', catDairy: 'Latticini', catMeat: 'Carne', catDrinks: 'Bevande', catOther: 'Altro',
-    basketEmpty: 'Il carrello è vuoto.', finalizeBtn: 'Finalizza ordine (solo chef)',
+    basketEmpty: 'Il carrello è vuoto.', finalizeBtn: 'Finalizza ordine (solo chef)', basketTotal: 'Totale carrello',
     orderFinalized: 'Ordine finalizzato!', basketEmptyError: 'Il carrello è vuoto.',
     noOrderYet: 'Nessun ordine ancora.', statusPending: 'In attesa', statusArrived: 'Arrivato', statusMissing: 'Mancante',
     notePlaceholder: 'Scrivi una nota...', markChefNote: 'Segna come nota dello chef', addNoteBtn: 'Aggiungi nota',
@@ -733,11 +733,18 @@ function loadBasket() {
 
 function renderBasket(data) {
   const list = document.getElementById('basketList');
+  const totalBox = document.getElementById('basketTotal');
   list.innerHTML = '';
-  if (data.length === 0) { list.innerHTML = `<div class="empty-state">${ICONS.empty}<p>${t('basketEmpty')}</p></div>`; return; }
+  if (data.length === 0) {
+    list.innerHTML = `<div class="empty-state">${ICONS.empty}<p>${t('basketEmpty')}</p></div>`;
+    totalBox.style.display = 'none';
+    return;
+  }
+  let total = 0;
   data.forEach(item => {
     const product = products.find(p => p.id === item.id);
     const name = product ? (product['name_' + currentLang] || product.name_de) : item.id;
+    if (product && product.price) total += product.price * item.quantity;
     const row = document.createElement('div');
     row.className = 'basket-row';
     const meta = [item.addedBy, item.timestamp].filter(Boolean).join(' · ');
@@ -748,6 +755,8 @@ function renderBasket(data) {
       </div>`;
     list.appendChild(row);
   });
+  document.getElementById('basketTotalValue').textContent = total.toFixed(2) + ' €';
+  totalBox.style.display = 'flex';
 }
 
 function removeFromBasket(rowIndex) {

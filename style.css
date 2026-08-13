@@ -407,6 +407,7 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .report-total .label { font-size: 13px; color: var(--text-muted); }
 .report-total .value { font-size: 24px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
 .report-subtotal { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-muted-2); padding: 2px 0 10px; }
+.basket-total { border-bottom: none; border-top: 1px solid var(--border-light); margin: 4px 0 0; padding: 12px 0 6px; }
 .report-section-title { font-weight: 800; font-size: 12.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin: 12px 2px 4px; }
 .report-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 14px; }
 .report-row:last-child { border-bottom: none; }

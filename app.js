@@ -10,7 +10,7 @@ const CACHED_PRODUCTS_KEY = 'cachedProducts';
 
 const translations = {
   de: {
-    title: 'Bestellliste', loading: 'Wird geladen...',
+    title: 'Order List', loading: 'Wird geladen...',
     offlineBanner: 'Kein Internet - wird lokal gespeichert und später gesendet',
     chefLogin: 'Chef', chefLogout: 'Chef ✓ (abmelden)', chefPinPrompt: 'Chef-PIN eingeben:', chefPinWrong: 'Falscher PIN',
     tabCatalog: 'Katalog', tabBasket: 'Warenkorb', tabDelivery: 'Lieferung', tabCalendar: 'Kalender', tabNotes: 'Notizen', tabReport: 'Bericht', tabDocuments: 'Dokumente',
@@ -90,7 +90,7 @@ const translations = {
     deviceBlocked: 'Blocked', deviceRevokedMsg: 'Access for this device has been revoked by the chef.'
   },
   it: {
-    title: 'Lista Ordini', loading: 'Caricamento...',
+    title: 'Order List', loading: 'Caricamento...',
     offlineBanner: 'Nessuna connessione - salvato localmente e inviato più tardi',
     chefLogin: 'Chef', chefLogout: 'Chef ✓ (esci)', chefPinPrompt: 'Inserisci il PIN dello chef:', chefPinWrong: 'PIN errato',
     tabCatalog: 'Catalogo', tabBasket: 'Carrello', tabDelivery: 'Consegna', tabCalendar: 'Calendario', tabNotes: 'Note', tabReport: 'Rapporto', tabDocuments: 'Documenti',

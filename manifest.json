@@ -1,6 +1,6 @@
 {
-  "name": "Restoran Bestellungen",
-  "short_name": "Bestellungen",
+  "name": "Order List",
+  "short_name": "Order List",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

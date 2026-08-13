@@ -39,6 +39,7 @@ const translations = {
     confirmDeleteProduct: 'Produkt "{name}" wirklich löschen?', productDeleted: 'Produkt gelöscht.',
     gateTitle: 'Zugangscode', gateSubtitle: 'Nur für Mitarbeiter des Restaurants.',
     gateEnter: 'Bestätigen', gateWrong: 'Falscher Code', gateNeedsInternet: 'Internet erforderlich zum ersten Öffnen.',
+    gateDeviceIdLabel: 'Geräte-ID',
     disabledTitle: 'Vorübergehend deaktiviert', disabledSubtitle: 'Das System wurde vom Inhaber ausgeschaltet.',
     markAllArrived: 'Alles als angekommen markieren', confirmMarkAllArrived: 'Wirklich alle Produkte dieser Bestellung als angekommen markieren?',
     customUnitOption: '+ Andere Einheit',
@@ -78,6 +79,7 @@ const translations = {
     confirmDeleteProduct: 'Really delete product "{name}"?', productDeleted: 'Product deleted.',
     gateTitle: 'Access Code', gateSubtitle: 'Restaurant staff only.',
     gateEnter: 'Confirm', gateWrong: 'Wrong code', gateNeedsInternet: 'Internet is required the first time you open this.',
+    gateDeviceIdLabel: 'Device ID',
     disabledTitle: 'Temporarily disabled', disabledSubtitle: 'The system has been switched off by the owner.',
     markAllArrived: 'Mark all as arrived', confirmMarkAllArrived: 'Really mark every product in this order as arrived?',
     customUnitOption: '+ Other unit',
@@ -117,6 +119,7 @@ const translations = {
     confirmDeleteProduct: 'Eliminare davvero il prodotto "{name}"?', productDeleted: 'Prodotto eliminato.',
     gateTitle: 'Codice di accesso', gateSubtitle: 'Solo per il personale del ristorante.',
     gateEnter: 'Conferma', gateWrong: 'Codice errato', gateNeedsInternet: 'Internet necessario per il primo accesso.',
+    gateDeviceIdLabel: 'ID dispositivo',
     disabledTitle: 'Temporaneamente disattivato', disabledSubtitle: 'Il sistema è stato disattivato dal proprietario.',
     markAllArrived: 'Segna tutto come arrivato', confirmMarkAllArrived: 'Segnare davvero tutti i prodotti di questo ordine come arrivati?',
     customUnitOption: '+ Altra unità',
@@ -435,6 +438,15 @@ function applyTranslations() {
   if (activeTab === 'notes') loadNotes();
   if (activeTab === 'report') loadReport();
   renderChefNoteBanner();
+  updateGateDeviceId();
+}
+
+// Shown on the staff PIN screen so a user can read out their own device's ID to the
+// chef (e.g. over the phone) if the chef needs to find and block/unblock it in the
+// devices list - matches the truncated form shown there for easy visual matching.
+function updateGateDeviceId() {
+  const el = document.getElementById('gateDeviceId');
+  if (el) el.textContent = t('gateDeviceIdLabel') + ': ' + getDeviceId().slice(0, 10);
 }
 
 function setLang(lang) {

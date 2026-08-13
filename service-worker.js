@@ -1,4 +1,4 @@
-const CACHE_NAME = 'restoran-buyurtma-v18';
+const CACHE_NAME = 'restoran-buyurtma-v19';
 const SHELL_FILES = [
   './',
   './index.html',

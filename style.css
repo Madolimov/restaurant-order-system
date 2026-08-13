@@ -416,6 +416,7 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .gate-icon { width: 52px; height: 52px; margin: 0 auto 18px; opacity: .95; }
 .gate-box h2 { font-size: 22px; margin: 0 0 8px; font-weight: 800; }
 .gate-subtitle { margin: 0 0 22px; font-size: 14px; color: rgba(255,255,255,.8); line-height: 1.5; }
+.gate-device-id { margin: -12px 0 18px; font-size: 11.5px; color: rgba(255,255,255,.55); font-variant-numeric: tabular-nums; }
 .gate-box .pin-input {
   background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.4); color: white;
 }

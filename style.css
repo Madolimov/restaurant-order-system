@@ -31,6 +31,12 @@
   --cat-meat: #b8442c;
   --cat-drinks: #d99a00;
   --cat-other: #78716c;
+  --cat-vegetables-bg: rgba(46,125,50,.1);
+  --cat-dairy-bg: rgba(25,118,210,.1);
+  --cat-meat-bg: rgba(184,68,44,.1);
+  --cat-drinks-bg: rgba(217,154,0,.12);
+  --cat-other-bg: rgba(120,113,108,.1);
+  --cat-badge-bg: rgba(0,0,0,.05);
   --modal-overlay: rgba(20,16,10,.55);
 }
 
@@ -68,6 +74,12 @@
     --cat-meat: #ff8a65;
     --cat-drinks: #ffca28;
     --cat-other: #b0aa9c;
+    --cat-vegetables-bg: rgba(111,207,115,.1);
+    --cat-dairy-bg: rgba(100,181,246,.1);
+    --cat-meat-bg: rgba(255,138,101,.1);
+    --cat-drinks-bg: rgba(255,202,40,.12);
+    --cat-other-bg: rgba(176,170,156,.1);
+    --cat-badge-bg: rgba(255,255,255,.08);
     --modal-overlay: rgba(0,0,0,.65);
   }
 }
@@ -200,19 +212,22 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 
 .category-header {
   display: flex; align-items: center; gap: 6px; width: 100%;
-  margin: 16px 2px 6px;
+  margin: 0 0 8px; padding: 4px 10px 4px 12px; border-radius: 14px;
+  box-shadow: 0 2px 6px var(--card-shadow);
+  transition: transform .12s ease;
 }
 .category-header:first-child { margin-top: 4px; }
+.category-header:active { transform: scale(0.98); }
 .category-toggle {
   display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;
-  font-weight: 800; font-size: 13.5px; margin: 0;
+  font-weight: 800; font-size: 14px; margin: 0;
   text-transform: uppercase; letter-spacing: .05em;
-  border: none; background: none; padding: 6px 2px; font-family: inherit; color: inherit;
+  border: none; background: none; padding: 10px 2px; font-family: inherit; color: inherit;
 }
 .category-header svg { width: 18px; height: 18px; flex-shrink: 0; }
 .category-toggle span { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .category-header .cat-count {
-  font-size: 11px; font-weight: 700; color: var(--text-muted-2); background: var(--pill-bg);
+  font-size: 10.5px; font-weight: 600; color: var(--text-muted-2); background: var(--cat-badge-bg);
   border-radius: 10px; padding: 1px 8px; text-transform: none; letter-spacing: 0; flex-shrink: 0;
 }
 .category-header .chevron { width: 15px; height: 15px; transition: transform .15s ease; flex-shrink: 0; }
@@ -225,7 +240,7 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .cat-add-btn svg { width: 14px; height: 14px; }
 .cat-add-btn:active { transform: scale(0.92); }
 
-.row-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.row-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .edit-btn {
   width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--accent-soft-bg); color: var(--accent-dark);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -267,11 +282,11 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .share-link.wa { background: #25D366; }
 .share-link.tg { background: #229ED9; }
 .share-link.mail { background: #d95d39; }
-.category-header.cat-vegetables { color: var(--cat-vegetables); }
-.category-header.cat-dairy { color: var(--cat-dairy); }
-.category-header.cat-meat { color: var(--cat-meat); }
-.category-header.cat-drinks { color: var(--cat-drinks); }
-.category-header.cat-other { color: var(--cat-other); }
+.category-header.cat-vegetables { color: var(--cat-vegetables); background: var(--cat-vegetables-bg); }
+.category-header.cat-dairy { color: var(--cat-dairy); background: var(--cat-dairy-bg); }
+.category-header.cat-meat { color: var(--cat-meat); background: var(--cat-meat-bg); }
+.category-header.cat-drinks { color: var(--cat-drinks); background: var(--cat-drinks-bg); }
+.category-header.cat-other { color: var(--cat-other); background: var(--cat-other-bg); }
 
 .product-row {
   display: flex; align-items: center; justify-content: space-between;
@@ -280,7 +295,7 @@ h1 { font-size: 21px; margin: 0; font-weight: 800; letter-spacing: -.01em; }
 .product-row:last-child { border-bottom: none; }
 .product-row > span { font-weight: 650; font-size: 15px; letter-spacing: -.005em; }
 .product-row > span small { font-weight: 500; color: var(--text-muted); font-size: 12.5px; }
-.stepper { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.stepper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .step-btn {
   width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg-grad-2);
   color: var(--text); font-size: 17px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;

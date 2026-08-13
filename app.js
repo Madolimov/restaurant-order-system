@@ -1,8 +1,12 @@
 // ==== SETUP: paste your deployed Google Apps Script Web App URL below ====
 const API_URL = 'https://script.google.com/macros/s/AKfycbwvqrC1fCl5jRJIfBizIIKquHS13YBhrMyuSgtuy5IzdwC4HWhR69MwzTBTrHQXXCy5/exec';
 const SECRET_KEY = '3058d732b248b00519bae478e685e280'; // must match Code.gs
-const CHEF_PIN = '0404'; // must match Code.gs - chef-only actions are re-checked on the server too
 // ===========================================================================
+
+// CHEF_PIN is intentionally NOT a hardcoded constant here - it's never shipped in the
+// public JS bundle. It's learned transiently (in memory + sessionStorage, cleared on
+// logout) only after the chef types it in and Code.gs's verifyChefPin() confirms it.
+let CHEF_PIN = sessionStorage.getItem('chefPin') || null;
 
 const FETCH_TIMEOUT_MS = 15000;
 const PENDING_KEY = 'pendingActions';
@@ -309,7 +313,9 @@ function showMsg(elId, text, kind) {
 function onChefButton() {
   if (chefMode) {
     chefMode = false;
+    CHEF_PIN = null;
     sessionStorage.removeItem('chefMode');
+    sessionStorage.removeItem('chefPin');
     updateChefUI();
     renderCatalog();
     return;
@@ -331,21 +337,30 @@ function closeChefPinModal() {
   document.getElementById('chef-pin-modal').style.display = 'none';
 }
 
-function confirmChefPin() {
+function confirmChefPin(btn) {
+  if (btn && btn.disabled) return;
   const input = document.getElementById('chefPinInput');
   const err = document.getElementById('chefPinError');
-  if (input.value === CHEF_PIN) {
-    chefMode = true;
-    sessionStorage.setItem('chefMode', 'true');
-    updateChefUI();
-    renderCatalog();
-    closeChefPinModal();
-  } else {
-    err.textContent = t('chefPinWrong');
+  const pin = input.value;
+  withBusy(btn, apiPost('verifyChefPin', { pin })).then(res => {
+    if (res.success) {
+      CHEF_PIN = pin;
+      sessionStorage.setItem('chefPin', pin);
+      chefMode = true;
+      sessionStorage.setItem('chefMode', 'true');
+      updateChefUI();
+      renderCatalog();
+      closeChefPinModal();
+    } else {
+      err.textContent = t('chefPinWrong');
+      err.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  }).catch(() => {
+    err.textContent = t('syncError');
     err.style.display = 'block';
-    input.value = '';
-    input.focus();
-  }
+  });
 }
 
 function onChefPinKey(e) {
